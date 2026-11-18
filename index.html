@@ -455,7 +455,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 50, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 51, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1488,7 +1488,7 @@ setTimeout(function () {
         el("p", { text: singles.length + (singles.length === 1 ? " person is" : " people are") + " saved: " + singles.filter(function (x) { return x.gender !== "f"; }).length + " boys and " + singles.filter(function (x) { return x.gender === "f"; }).length + " girls. " + singles.filter(function (x) { return (x.status || "available") === "available"; }).length + " are single." }),
         el("p", { class: "msg", text: "Get the latest from your Google Sheet, for example after adding people on another device. The round arrow at the top does the same." }),
         el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Refresh", onclick: function () { closeSheet(); $("refresh").click(); } }))),
-      sect("Give the app to someone",
+      sect("Share the app",
         el("p", { class: "msg", text: "Send them this link. They make their own login and see only their own list, never yours. Their settings are their own too." }),
         el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Copy the link", onclick: function () {
           var link = shareUrl() || "", shown = function () { linkBox.textContent = link; };
