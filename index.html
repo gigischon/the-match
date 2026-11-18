@@ -298,8 +298,10 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
     <label class="fld"><span>Email</span><input id="g-email" type="email" autocomplete="username" inputmode="email"></label>
     <label class="fld"><span>Passcode</span><input id="g-pass" type="password" autocomplete="current-password"></label>
     <label class="fld" id="g-pass2-wrap" hidden><span>Type the passcode again</span><input id="g-pass2" type="password" autocomplete="new-password"></label>
+    <label class="fld" id="g-code-wrap" hidden><span>Code from your email</span><input id="g-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>
     <label class="chk"><input type="checkbox" id="g-keep" checked> Keep me signed in on this device</label>
     <button type="submit" class="btn primary" id="gateGo">Sign in</button>
+    <button type="button" class="btn" id="gateResend" hidden>Send a new code</button>
     <button type="button" class="btn" id="gateSwap">Create a new account</button>
   </form>
 </div>
@@ -307,6 +309,17 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
 <div id="toast" class="toast" role="status" hidden></div>
 
 <script type="application/json" id="boot">__BOOT__</script>
+<script>
+/* A safety net, kept apart from the app itself: if the opening screen is still up after 8 seconds, something went wrong
+   with the copy of the page this device saved, so it fetches the page again once. */
+setTimeout(function () {
+  var s = document.getElementById("splash");
+  if (!s || s.hidden || /gone/.test(s.className)) return;
+  var own = false; try { own = window.top === window; } catch (e) {}
+  if (own && location.search.indexOf("r=") < 0) { location.replace(location.pathname + "?r=" + Date.now()); return; }
+  s.insertAdjacentHTML("beforeend", '<div style="margin-top:18px;padding:0 24px;text-align:center;font:14px sans-serif">Could not open. Check your connection, then close the app and open it again.</div>');
+}, 8000);
+</script>
 <script>
 (function () {
   "use strict";
@@ -414,7 +427,7 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 46, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 47, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -619,8 +632,10 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
   }
 
   /* ---------- sign in, create an account, stay signed in ---------- */
+  var DEV = "tm-dev", needCode = false;   // a device that has given the emailed code once keeps a key, so it is not asked again
+  function codeStep(on) { needCode = on; $("g-code-wrap").hidden = !on; $("gateResend").hidden = !on; if (!on) $("g-code").value = ""; }
   function showGate(mode, msg) {
-    hideSplash();
+    hideSplash(); codeStep(false);
     gateMode = mode === "new" ? "new" : "in";
     $("gate").hidden = false; $("g-pass").value = ""; $("g-pass2").value = "";
     $("g-pass2-wrap").hidden = gateMode !== "new";
@@ -630,15 +645,19 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
     $("gateMsg").textContent = msg || (gateMode === "new" ? "Use your email and choose a passcode of at least 6 characters. Your list is private to your account." : "Enter your email and passcode.");
   }
   $("gateSwap").addEventListener("click", function () { showGate(gateMode === "new" ? "in" : "new"); });
-  $("gateForm").addEventListener("submit", function (e) {
-    e.preventDefault();
+  function gateSubmit(e) {
+    if (e) e.preventDefault();
     var email = $("g-email").value.trim(), p = $("g-pass").value, isNew = gateMode === "new";
     if (!email || !p) { $("gateMsg").textContent = "Enter your email and passcode."; return; }
     if (isNew && p.length < 6) { $("gateMsg").textContent = "Use at least 6 characters for the passcode."; return; }
     if (isNew && p !== $("g-pass2").value) { $("gateMsg").textContent = "The two passcodes do not match."; return; }
-    $("gateGo").disabled = true; $("gateMsg").textContent = isNew ? "Creating your account…" : "Signing in…";
-    call(isNew ? "signup" : "login", { email: email, pass: p }).then(function (r) {
-      $("gateGo").disabled = false;
+    var code = $("g-code").value.replace(/[^0-9]/g, ""), dev = "";
+    if (needCode && code.length < 6) { $("gateMsg").textContent = "Type the 6-digit code from your email."; return; }
+    try { dev = localStorage.getItem(DEV) || ""; } catch (e0) {}
+    $("gateGo").disabled = true; $("gateMsg").textContent = needCode ? "Checking the code…" : isNew ? "Creating your account…" : "Signing in…";
+    call(isNew ? "signup" : "login", { email: email, pass: p, device: dev, code: needCode ? code : "" }).then(function (r) {
+      $("gateGo").disabled = false; codeStep(false);
+      if (r.device && $("g-keep").checked) { try { localStorage.setItem(DEV, r.device); } catch (e1) {} }
       PASS = r.token; ME = r.email || email; APP_URL = r.appUrl || APP_URL;
       var keep = $("g-keep").checked;
       if (keep) { try { localStorage.setItem(KEEP, PASS); } catch (e2) {} }
@@ -654,7 +673,13 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
     }).catch(function (err) {
       $("gateGo").disabled = false;
       var c = err && err.error;
-      $("gateMsg").textContent = c === "locked" ? "Too many wrong tries. Wait " + (err.minutes || 15) + " minutes and try again."
+      if (c === "code") { codeStep(true); $("gateGo").textContent = "Confirm code"; try { $("g-code").focus(); } catch (e4) {} }
+      $("gateMsg").textContent = c === "code" ? "For your security, we emailed a 6-digit code to " + email + ". Type it below. It works for 10 minutes. This is asked once on each new phone or computer."
+        : c === "badcode" ? "That code is not right. Check the email and try again."
+        : c === "codeold" ? "That code no longer works. Tap Send a new code."
+        : c === "codewait" ? "Too many codes were sent. Wait an hour and try again."
+        : c === "mail" ? "The code could not be emailed right now. Try again in a little while."
+        : c === "locked" ? "Too many wrong tries. Wait " + (err.minutes || 15) + " minutes and try again."
         : c === "badlogin" ? "That email and passcode do not match an account."
         : c === "exists" ? "There is already an account with that email. Use \"I already have an account\"."
         : c === "bademail" ? "That does not look like an email address."
@@ -662,7 +687,9 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
         : c === "full" ? "No more accounts can be created right now."
         : "Could not reach Google. Check your connection and try again.";
     });
-  });
+  }
+  $("gateForm").addEventListener("submit", gateSubmit);
+  $("gateResend").addEventListener("click", function () { codeStep(false); gateSubmit(); });
   function shareUrl() { return REMOTE ? location.origin + location.pathname : APP_URL; }   // the link to give to other people
   function openAccount() {
     openSheet("Account", "account", null);
