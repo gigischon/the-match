@@ -455,7 +455,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 52, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 53, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1144,6 +1144,14 @@ setTimeout(function () {
     if (pAdd && !photosBtn) pAdd.textContent = "Add photos";   // with no picture yet the button says Add photos; once there is one it sits next to Open photos
     opens.concat([rAdd, rPick, photosBtn, pAdd, pPick], removes, [sendBtn]).forEach(function (x) { if (x) rBox.append(x); });
     body.append(el("h3", { text: "Resume and pictures" }), rBox);
+    /* Delete right from the profile: the first press asks, the second press deletes. */
+    body.append(el("div", { class: "acts", style: "margin-top:18px" }, deleteButton("Delete this profile", function (btn) {
+      work(call("deleteSingle", { id: id }), btn).then(function () {
+        singles = singles.filter(function (x) { return x.id !== id; });
+        matches = matches.filter(function (m) { return m.m !== id && m.f !== id; });
+        delete photos[id]; closeSheet(); render();
+      }).catch(function () {});
+    })));
 
 
     if (same) $("sheet").scrollTop = top;
