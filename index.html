@@ -407,6 +407,14 @@ html.nl .tabs button { min-height: 48px; }
 html.nl main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .myname { font-size: 1.1rem; font-weight: 600; margin: 2px 0 2px; }
 .myemail { margin: 0 0 12px; overflow-wrap: anywhere; }
+.finder { position: relative; }
+.picks { max-height: 236px; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.picks button { display: block; width: 100%; text-align: left; padding: 9px 12px; border: 0; border-bottom: 1px solid var(--line); background: transparent; font: inherit; color: inherit; cursor: pointer; }
+.picks button:last-child { border-bottom: 0; }
+.picks button b { display: block; font-weight: 600; }
+.picks button small { display: block; color: var(--muted); font-size: .82rem; }
+.picks button[aria-pressed="true"] { background: var(--accent-soft); }
+.picks .none { margin: 0; padding: 10px 12px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -652,7 +660,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 69, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 70, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1618,7 +1626,11 @@ setTimeout(function () {
   function listSig(t) { return [t.name, t.n, t.parts].join("|"); }
   function keepListText(t) { if (LIVE) fdo("readwrite", function (st) { return st.put({ t: t }, fkey("~list-text")); }); }
   function listTextFromGoogle(token) {
-    return (token ? send({ action: "getList", token: token, part: "text" }) : call("getList", { part: "text" })).then(function (r) { return JSON.parse(decodeURIComponent(escape(atob(r.data)))); });
+    var ask = function () { return (token ? send({ action: "getList", token: token, part: "text" }) : call("getList", { part: "text" })).then(function (r) { return JSON.parse(decodeURIComponent(escape(atob(r.data)))); }); };
+    return ask().catch(function (e) {   // one more try before saying it could not be opened
+      if (e && (e.error === "signin" || e.error === "noresume")) throw e;
+      return new Promise(function (res) { setTimeout(res, 2000); }).then(ask);
+    });
   }
   function warmList() {   // quietly, once the app is open: fetch the List onto this device if it is not here yet
     if (!LIVE || !PASS || bigList.text || bigList.pdf) return;
@@ -2057,19 +2069,39 @@ setTimeout(function () {
     });
     $("sheetBody").append(form);
   }
-  /* A search box over a list of people: type part of a name or city and the list below shrinks to match. */
+  /* Choosing a person: tap the box to see everyone in alphabetical order, or start typing and the matching people
+     come up underneath; tap one to choose. The hidden list behind it holds the choice for the form. */
   function finder(sel, ph) {
-    var all = Array.prototype.slice.call(sel.options).map(function (o) { return { v: o.value, t: o.textContent }; });
-    var inp = el("input", { type: "search", placeholder: ph, "aria-label": ph });
-    inp.addEventListener("input", function () {
-      var q = inp.value.trim().toLowerCase(), keep = sel.value;
-      var hits = all.filter(function (o) { return !o.v || !q || o.t.toLowerCase().indexOf(q) >= 0; });
-      sel.textContent = "";
-      hits.forEach(function (o) { sel.append(el("option", { value: o.v, text: o.t })); });
-      var real = hits.filter(function (o) { return o.v; });
-      sel.value = real.length === 1 ? real[0].v : (hits.some(function (o) { return o.v === keep; }) ? keep : "");
+    var all = Array.prototype.slice.call(sel.options).filter(function (o) { return o.value; }).map(function (o) {
+      var t = o.textContent, cut = t.lastIndexOf(" (");
+      return { v: o.value, t: t, name: cut > 0 ? t.slice(0, cut) : t, sub: cut > 0 ? t.slice(cut + 2).replace(/\)$/, "") : "" };
     });
-    return inp;
+    var cur = all.filter(function (o) { return o.v === sel.value; })[0] || null;
+    var inp = el("input", { type: "search", placeholder: ph, "aria-label": ph, autocomplete: "off", value: cur ? cur.name : "" });
+    var list = el("div", { class: "picks", hidden: true }), wrap = el("div", { class: "finder" }, inp, list);
+    sel.hidden = true;
+    var show = function () {
+      var q = cur && inp.value === cur.name ? "" : inp.value.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean);
+      var first = [], rest = [];
+      all.forEach(function (o) {
+        var nm = o.name.toLowerCase(), whole = o.t.toLowerCase();
+        if (words.every(function (w) { return nm.indexOf(w) >= 0; })) first.push(o);
+        else if (words.every(function (w) { return whole.indexOf(w) >= 0; })) rest.push(o);
+      });
+      var hits = first.concat(rest);
+      list.textContent = "";
+      if (!hits.length) list.append(el("p", { class: "none", text: all.length ? "Nobody in your list matches that." : "Nobody to choose from yet." }));
+      hits.forEach(function (o) {
+        list.append(el("button", { type: "button", "aria-pressed": cur && cur.v === o.v ? "true" : "false", onclick: function () {
+          cur = o; sel.value = o.v; inp.value = o.name; list.hidden = true;
+        } }, el("b", { text: o.name }), o.sub ? el("small", { text: o.sub }) : null));
+      });
+      list.hidden = false;
+    };
+    inp.addEventListener("focus", show); inp.addEventListener("click", show);
+    inp.addEventListener("input", function () { if (cur && inp.value !== cur.name) { cur = null; sel.value = ""; } show(); });
+    inp.addEventListener("blur", function () { setTimeout(function () { if (!wrap.contains(document.activeElement)) list.hidden = true; }, 250); });
+    return wrap;
   }
   function personSelect(id, gender, val, locked) {
     var sel = el("select", { id: id, disabled: locked });
@@ -2095,8 +2127,8 @@ setTimeout(function () {
     var notes = el("textarea", { id: "m-notes", value: m ? m.notes || "" : "", placeholder: "Who you spoke to, what each side said, what is next" });
     var save = el("button", { type: "submit", class: "btn primary", text: "Save" });
     form.append(
-      el("div", { class: "fld" }, el("span", { text: "Boy" }), m ? null : finder(mSel, "Search boys by name or city"), mSel),
-      el("div", { class: "fld" }, el("span", { text: "Girl" }), m ? null : finder(fSel, "Search girls by name or city"), fSel),
+      el("div", { class: "fld" }, el("span", { text: "Boy" }), m ? null : finder(mSel, "Type a name, or tap to see all the boys"), mSel),
+      el("div", { class: "fld" }, el("span", { text: "Girl" }), m ? null : finder(fSel, "Type a name, or tap to see all the girls"), fSel),
       el("div", { class: "pair" }, el("label", { class: "fld" }, el("span", { text: "Stage" }), stage), el("label", { class: "fld" }, el("span", { text: "Follow up on" }), follow)),
       el("label", { class: "fld" }, el("span", { text: "Notes" }), notes),
       el("div", { class: "acts" }, save, el("button", { type: "button", class: "btn", text: "Cancel", onclick: function () { back ? openDetail(back) : closeSheet(); } })));
