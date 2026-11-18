@@ -378,11 +378,30 @@ html.nl .topin #acct[data-ini=""] { background-size: 21px 21px; background-image
 html.nl .topin #list, html.nl .topin #settings { width: 34px; border: 0; background-color: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; background-size: 24px 24px; border-radius: 10px; }
 html.nl .topin #list:active, html.nl .topin #settings:active { background-color: rgba(126, 176, 242, .14); }
 @media (max-width: 520px) { html.nl .topin #list, html.nl .topin #settings { width: 32px; } }
+h2.sec { font-size: 1.1rem; margin: 6px 2px 10px; }
+#p-ideas { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+html.nl h2.sec { font-family: "Playfair Display", Georgia, serif; font-weight: 500; font-size: 1.3rem; color: #1B2A4E; }
+html.nl #p-ideas { border-bottom-color: #E8EEF8; }
+html.nl #ideaGo { border-radius: 999px; }
+/* new look: the light blue belongs to the boys and the pictures; buttons and wording use a slightly deeper blue */
+html.nl { --accent: #4E8BDD; }
+html.nl .chip[aria-pressed="true"] { background: linear-gradient(180deg, #74A6EC 0%, #4E8BDD 100%); border-color: #4E8BDD; color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 3px 10px rgba(78, 139, 221, .26); }
+html.nl .btn.primary { background: #4E8BDD; border-color: #4E8BDD; }
+html.nl #addSingle.btn.primary, html.nl #addMatch.btn.primary, html.nl #addIdea.btn.primary { border-color: #A9C4F0; color: #3F7BD0; background: #F1F6FF; }
+html.nl .seg button[data-g=""][aria-pressed="true"], html.nl .seg button:not([data-g])[aria-pressed="true"] { background: linear-gradient(180deg, #74A6EC 0%, #4E8BDD 100%); border-color: #4E8BDD; color: #FFFFFF; }
+/* new look, the bottom: three glossy bubbles */
+html.nl .tabs { padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+html.nl .tabs div { gap: 8px; }
+html.nl .tabs button { min-height: 44px; padding: 9px 4px; border-radius: 999px; border: 1px solid #DCE4F2; color: #3F7BD0; font-weight: 600;
+  background: linear-gradient(180deg, #FFFFFF 0%, #EEF3FC 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 2px 6px rgba(40, 70, 140, .09); transition: transform .12s ease; }
+html.nl .tabs button:active { transform: scale(.96); }
+html.nl .tabs button[aria-current="page"] { color: #FFFFFF; font-weight: 700; border-color: #4E8BDD;
+  background: linear-gradient(180deg, #7FADF0 0%, #4E8BDD 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 4px 12px rgba(78, 139, 221, .34); }
 </style>
 </head>
 <body>
 <div id="splash" class="splash" aria-hidden="true"><svg class="sp-mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#F7F3EC" stroke-width="20"/></svg><div class="sp-the">The</div><div class="sp-name">Match</div></div>
-<header class="top"><div class="wrap topin"><h1><svg class="mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="currentColor" stroke-width="20"/></svg><span class="t1">The </span><span class="t2">Match</span></h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button><button type="button" id="menuBtn" class="menubtn" aria-label="Menu" aria-expanded="false"><span></span><span></span></button></div></div><div id="menuPop" class="menupop" hidden><button type="button" data-go="list"><span class="mi m1"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13c3.600-.2 6.200.4 8 1.700'/><path d='M12 6.5c1.800-1.300 4.400-1.900 8-1.700v13c-3.600-.2-6.200.4-8 1.700'/><path d='M12 6.500v13'/></svg></span><span class="mt"><b>The List</b><i>The full book, with search</i></span></button><button type="button" data-go="refresh"><span class="mi m2"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 11a8 8 0 0 0-14.3-4.3L4 8.5'/><path d='M4 4v4.5h4.5'/><path d='M4 13a8 8 0 0 0 14.3 4.3l1.7-1.8'/><path d='M20 20v-4.5h-4.5'/></svg></span><span class="mt"><b>Refresh</b><i>Get the latest from Google</i></span></button><button type="button" data-go="acct"><span class="mi m3"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='8.500' r='3.700'/><path d='M4.800 20c.7-3.700 3.600-5.700 7.200-5.700s6.500 2 7.200 5.700'/></svg></span><span class="mt"><b>Account</b><i>Sign-in and sharing</i></span></button><button type="button" data-go="settings"><span class="mi m4"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1'/><circle cx='15' cy='7' r='2'/><circle cx='9' cy='12' r='2'/><circle cx='17' cy='17' r='2'/></svg></span><span class="mt"><b>Settings</b><i>Display, groups, your list</i></span></button></div></header>
+<header class="top"><div class="wrap topin"><h1><svg class="mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="currentColor" stroke-width="20"/></svg><span class="t1">The </span><span class="t2">Match</span></h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct" data-ini="">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button><button type="button" id="menuBtn" class="menubtn" aria-label="Menu" aria-expanded="false"><span></span><span></span></button></div></div><div id="menuPop" class="menupop" hidden><button type="button" data-go="list"><span class="mi m1"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13c3.600-.2 6.200.4 8 1.700'/><path d='M12 6.5c1.800-1.300 4.400-1.900 8-1.700v13c-3.600-.2-6.200.4-8 1.700'/><path d='M12 6.500v13'/></svg></span><span class="mt"><b>The List</b><i>The full book, with search</i></span></button><button type="button" data-go="refresh"><span class="mi m2"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 11a8 8 0 0 0-14.3-4.3L4 8.5'/><path d='M4 4v4.5h4.5'/><path d='M4 13a8 8 0 0 0 14.3 4.3l1.7-1.8'/><path d='M20 20v-4.5h-4.5'/></svg></span><span class="mt"><b>Refresh</b><i>Get the latest from Google</i></span></button><button type="button" data-go="acct"><span class="mi m3"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='8.500' r='3.700'/><path d='M4.800 20c.7-3.700 3.600-5.700 7.200-5.700s6.500 2 7.200 5.700'/></svg></span><span class="mt"><b>Account</b><i>Sign-in and sharing</i></span></button><button type="button" data-go="settings"><span class="mi m4"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1'/><circle cx='15' cy='7' r='2'/><circle cx='9' cy='12' r='2'/><circle cx='17' cy='17' r='2'/></svg></span><span class="mt"><b>Settings</b><i>Display, groups, your list</i></span></button></div></header>
 <div id="note" class="wrap note" hidden><div id="noteText"></div></div>
 <div id="update" class="wrap note" hidden><div>A newer version of The Match is ready. <a id="updateGo" target="_top" href="#">Tap here to update</a></div></div>
 
@@ -395,12 +414,13 @@ html.nl .topin #list:active, html.nl .topin #settings:active { background-color:
         <button type="button" data-g="f" aria-pressed="false">Girls</button>
       </div>
       <select id="fStatus" aria-label="Status">
-        <option value="">All but engaged</option>
+        <option value="">All</option>
         <option value="available">Single</option>
         <option value="busy">Dating</option>
         <option value="hold">On hold</option>
-        <option value="engaged">Engaged</option>
         <option value="closed">Closed</option>
+        <option disabled>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</option>
+        <option value="engaged">Engaged</option>
       </select>
       <button type="button" class="btn primary" id="addSingle">Add single</button>
     </div>
@@ -419,7 +439,6 @@ html.nl .topin #list:active, html.nl .topin #settings:active { background-color:
       <select id="fStage" aria-label="Stage">
         <option value="open">In progress</option>
         <option value="">All stages</option>
-        <option value="idea">Idea</option>
         <option value="suggested">Suggested</option>
         <option value="checking">Looking into it</option>
         <option value="yes">Gave a yes</option>
@@ -434,11 +453,13 @@ html.nl .topin #list:active, html.nl .topin #settings:active { background-color:
   </section>
 
   <section id="p-mine" hidden>
+    <h2 class="sec">My ideas</h2>
     <div class="tools"><input id="mineQ" type="search" placeholder="Search my ideas by name" aria-label="Search my ideas"><button type="button" class="btn primary" id="addIdea">Add an idea</button></div>
     <div id="mineList" class="list"></div>
   </section>
 
   <section id="p-ideas" hidden>
+    <h2 class="sec">Suggest a match</h2>
     <label class="fld"><span>Who needs a shidduch idea?</span><select id="ideaFor"></select></label>
     <div class="acts"><button type="button" class="btn primary" id="ideaGo">Suggest matches</button></div>
     <p id="ideaMsg" class="msg">Pick a person and tap Suggest matches. Suggestions compare age, hashkafa, background and location, and skip anyone already tried.</p>
@@ -449,8 +470,7 @@ html.nl .topin #list:active, html.nl .topin #settings:active { background-color:
 <nav class="tabs" aria-label="Sections"><div>
   <button type="button" data-tab="singles" aria-current="page">Singles</button>
   <button type="button" data-tab="matches">Shidduchim<span id="dueBadge" class="badge" hidden></span></button>
-  <button type="button" data-tab="mine">My ideas</button>
-  <button type="button" data-tab="ideas">Suggest</button>
+  <button type="button" data-tab="mine">Ideas</button>
 </div></nav>
 
 <div id="sheet" class="sheet" hidden>
@@ -496,7 +516,7 @@ setTimeout(function () {
   try {
     var lookPick = (location.search.match(/[?&]look=(new|old)/) || [])[1];
     if (lookPick) localStorage.setItem("tm-look", lookPick);
-    if (localStorage.getItem("tm-look") === "new") document.documentElement.classList.add("nl");
+    if (localStorage.getItem("tm-look") !== "old") document.documentElement.classList.add("nl");   // the new look is the normal one; ?look=old brings the old one back on this device
   } catch (e) {}
   /* Night look is a choice: the Night button turns it on or off and this device remembers it. The app never goes dark by itself. */
   function setNight(on) {
@@ -622,7 +642,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 64, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 66, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1069,7 +1089,7 @@ setTimeout(function () {
       return;
     }
     var f = $("fStage").value;
-    var rows = matches.filter(function (m) { return f === "" ? true : f === "open" ? OPEN.indexOf(m.stage) >= 0 : m.stage === f; })
+    var rows = matches.filter(function (m) { return m.stage === "idea" ? false : f === "" ? true : f === "open" ? OPEN.indexOf(m.stage) >= 0 : m.stage === f; })   // ideas not redt yet live under Ideas
       .sort(function (a, b) { return (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0); });
     if (!rows.length) { box.append(el("div", { class: "empty" }, el("p", { text: "Nothing at this stage." }))); return; }
     rows.forEach(function (m) { box.append(matchRow(m)); });
@@ -1116,14 +1136,12 @@ setTimeout(function () {
     if (!loaded) return;
     var mq = $("mineQ").value.trim().toLowerCase();
     var hit = function (m) { return !mq || (nameOf(m.m) + " " + nameOf(m.f)).toLowerCase().indexOf(mq) >= 0; };
-    var groups = [["Everything I redt", false, function (m) { return m.redtAt || dayOf({ createdAt: m.createdAt }); }],
-                  ["Ideas I have not redt yet", true, function (m) { return dayOf({ createdAt: m.createdAt }); }]], any = false;
+    var groups = [["Ideas I have not redt yet", true, function (m) { return dayOf({ createdAt: m.createdAt }); }]], any = false;   // what was redt is under Shidduchim
     groups.forEach(function (g) {
       var list = matches.filter(function (m) { return (m.stage === "idea") === g[1] && hit(m); })
         .sort(function (a, b) { var da = g[2](a), dz = g[2](b); return da === dz ? (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0) : (da < dz ? 1 : -1); });
       if (!list.length) return;
       any = true;
-      box.append(el("h2", { text: g[0] }));
       var last = null;
       list.forEach(function (m) {
         var day = g[2](m);
@@ -1133,7 +1151,7 @@ setTimeout(function () {
     });
     if (!any && mq) box.append(el("div", { class: "empty" }, el("p", { text: "No ideas match that search." })));
     else if (!any) box.append(el("div", { class: "empty" }, el("h3", { text: "No ideas yet" }),
-      el("p", { text: "Tap Add an idea, choose him and her, and write what made you think of it. When you have redt it, tap I redt it and it moves up under Everything I redt, with the date." })));
+      el("p", { text: "Tap Add an idea, choose him and her, and write what made you think of it. When you have redt it, tap I redt it and it moves to Shidduchim." })));
   }
 
   /* Open the stored resume file. A window is opened at the tap itself (so the browser allows it) and filled once the file arrives. */
@@ -2398,8 +2416,11 @@ setTimeout(function () {
   }
 
   /* ---------- wiring ---------- */
+  $("p-mine").before($("p-ideas"));   // on the Ideas page the suggesting tool sits above the list of ideas
   function setTab(t) {
-    ["singles", "matches", "mine", "ideas"].forEach(function (x) { $("p-" + x).hidden = x !== t; });
+    if (t === "ideas") t = "mine";   // Suggest is part of the Ideas page now
+    ["singles", "matches", "mine"].forEach(function (x) { $("p-" + x).hidden = x !== t; });
+    $("p-ideas").hidden = t !== "mine";
     document.querySelectorAll(".tabs button").forEach(function (b) { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     window.scrollTo(0, 0);
   }
