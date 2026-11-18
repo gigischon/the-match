@@ -268,7 +268,7 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
         <option value="checking">Looking into it</option>
         <option value="yes">Gave a yes</option>
         <option value="dating">Dating</option>
-        <option value="middle">In the middle</option>
+        <option value="middle">Dating, with the number of dates</option>
         <option value="ended">Ended</option>
         <option value="engaged">Engaged</option>
       </select>
@@ -346,7 +346,7 @@ setTimeout(function () {
   document.getElementById("night").addEventListener("click", function () { nightOn = !nightOn; setNight(nightOn); });
 
   var STATUS = { available: "Single", busy: "Dating", hold: "On hold", engaged: "Engaged", married: "Married", closed: "Closed" };
-  var STAGE = { idea: "Idea", suggested: "Suggested", checking: "Looking into it", yes: "Gave a yes", dating: "Dating", middle: "In the middle", ended: "Ended", engaged: "Engaged" };
+  var STAGE = { idea: "Idea", suggested: "Suggested", checking: "Looking into it", yes: "Gave a yes", dating: "Dating", middle: "Dating", ended: "Ended", engaged: "Engaged" };
   var OPEN = ["idea", "suggested", "checking", "yes", "dating", "middle"];
   var MARITAL = { single: "Never married", divorced: "Divorced", widowed: "Widowed" };
   var FIELDS = [
@@ -459,7 +459,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 56, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 57, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -525,7 +525,7 @@ setTimeout(function () {
     return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   }
   function byId(id) { for (var i = 0; i < singles.length; i++) if (singles[i].id === id) return singles[i]; return null; }
-  function put(list, rec) { for (var i = 0; i < list.length; i++) if (list[i].id === rec.id) { list[i] = rec; return; } list.push(rec); }
+  function put(list, rec) { if (list === singles) restamp(rec); for (var i = 0; i < list.length; i++) if (list[i].id === rec.id) { list[i] = rec; return; } list.push(rec); }
   function ageOf(s) {
     if (s.dob) {
       var p = String(s.dob).split("-").map(Number), n = new Date();
@@ -595,7 +595,7 @@ setTimeout(function () {
       if (r.action === "deleteResume") delete mock.r[r.id];
       if (r.action === "saveResume") { mock.r[r.id] = { mime: r.mime, data: r.data }; }
       if (r.action === "getResume") return mock.r[r.id] ? { ok: true, mime: mock.r[r.id].mime, data: mock.r[r.id].data } : { ok: false, error: "noresume" };
-      if (r.action === "bulk") { (r.singles || []).forEach(function (x) { put(S, copy(x)); }); Object.keys(r.photos || {}).forEach(function (k) { P[k] = r.photos[k]; }); Object.keys(r.resumes || {}).forEach(function (k) { mock.r[k] = { mime: "application/pdf", data: r.resumes[k] }; }); }
+      if (r.action === "bulk") { (r.singles || []).forEach(function (x) { put(S, copy(x)); }); (r.matches || []).forEach(function (x) { put(M, copy(x)); }); Object.keys(r.photos || {}).forEach(function (k) { P[k] = r.photos[k]; }); Object.keys(r.resumes || {}).forEach(function (k) { mock.r[k] = { mime: "application/pdf", data: r.resumes[k] }; }); }
       if (r.action === "removeTest") { del(S, function (x) { return x.id.indexOf("test-") === 0; }); del(M, function (x) { return x.m.indexOf("test-") === 0 || x.f.indexOf("test-") === 0; }); Object.keys(P).forEach(function (k) { if (k.indexOf("test-") === 0) delete P[k]; }); }
       return { ok: true, token: "preview", email: "preview", appUrl: "", data: copy({ singles: S, matches: M }), photos: copy(P) };
     }, s: [], m: [], p: {}, r: {}, l: {}
@@ -661,7 +661,7 @@ setTimeout(function () {
       if (LIVE && !REMOTE && URLKEY === PASS && r.keyAge != null && r.keyAge < 600000) note("You are signed in. Do this once on this device: tap the Share button, choose Add to Home Screen, and from now on open The Match from that new icon. It will not ask you to sign in again. To give the app to someone else, use Account and send the plain link, never this page.");
 
       return quiet && Object.keys(photos).length ? null : call("photos");   // pictures are fetched once, not on every background refresh
-    }).then(function (r) { if (r) { photos = r.photos || {}; render(); } demoStart(); }).catch(function (e) { note(""); oops(e); });
+    }).then(function (r) { if (r) { photos = r.photos || {}; render(); } demoStart(); warmFiles(); }).catch(function (e) { note(""); oops(e); });
   }
 
   /* ---------- sign in, create an account, stay signed in ---------- */
@@ -770,7 +770,7 @@ setTimeout(function () {
     call(action).catch(function () {}).then(function () {
       PASS = ""; ME = ""; try { localStorage.removeItem(KEEP); } catch (e) {}
       delete prefs.groups; GROUPS = []; groupSel = [];
-      singles = []; matches = []; photos = {}; resumeCache = {}; ideas = null; loaded = false;
+      singles = []; matches = []; photos = {}; resumeCache = cacheBox(); fdo("readwrite", function (st) { return st.clear(); }); ideas = null; loaded = false;
       closeSheet(); render(); note(""); showGate("in", "You are signed out.");
     });
   }
@@ -863,8 +863,8 @@ setTimeout(function () {
         el("div", { class: "r1" }, el("span", { class: "nm", text: s.name }), pill(st, STATUS[st] || st)),
         el("div", { class: "sub", text: subline(s) }), extra));
   }
-  /* What a shidduch shows on the list: "In the middle, 6" when the number of dates is set. */
-  function stageText(m) { return (STAGE[m.stage] || m.stage) + (m.stage === "middle" && m.dates ? ", " + m.dates : ""); }
+  /* What a shidduch shows on the list: "Dating, 6 dates" when the number of dates is set. */
+  function stageText(m) { return (STAGE[m.stage] || m.stage) + (m.stage === "middle" && m.dates ? ", " + m.dates + (String(m.dates) === "1" ? " date" : " dates") : ""); }
   function matchRow(m) {
     var bits = [];
     if (m.followUp && OPEN.indexOf(m.stage) >= 0) bits.push("Follow up " + fmtDate(m.followUp));
@@ -953,7 +953,97 @@ setTimeout(function () {
   }
 
   /* Open the stored resume file. A window is opened at the tap itself (so the browser allows it) and filled once the file arrives. */
-  var resumeCache = {};
+  /* A resume or large picture that has been opened once is also kept on this device, so the next time it opens at once
+     without asking Google. The copy is tied to the account and to the profile's last change (so a file changed on
+     another device is fetched again), and it is wiped from the device on signing out. */
+  var fileDb = null;
+  function fdb() {
+    if (!fileDb) fileDb = new Promise(function (res) {
+      try {
+        var q = indexedDB.open("tm-files", 1);
+        q.onupgradeneeded = function () { q.result.createObjectStore("f"); };
+        q.onsuccess = function () { res(q.result); };
+        q.onerror = q.onblocked = function () { res(null); };
+      } catch (e) { res(null); }
+    });
+    return fileDb;
+  }
+  function fdo(mode, fn) {
+    return fdb().then(function (db) {
+      if (!db) return null;
+      return new Promise(function (res) {
+        try {
+          var tx = db.transaction("f", mode), out = fn(tx.objectStore("f"));
+          tx.oncomplete = function () { res(out ? out.result : null); };
+          tx.onerror = tx.onabort = function () { res(null); };
+        } catch (e) { res(null); }
+      });
+    });
+  }
+  function fkey(id) { return ME + "|" + id; }
+  function stampOf(id) {
+    for (var i = 0; i < singles.length; i++) if (id === singles[i].id || String(id).indexOf(singles[i].id + "_") === 0) return String(singles[i].updatedAt || "");
+    return "";
+  }
+  function cacheBox() {
+    return new Proxy({}, {
+      set: function (o, k, v) {
+        o[k] = v;
+        if (LIVE && v && v.data && !v.fromDevice) fdo("readwrite", function (st) { return st.put({ stamp: stampOf(k), mime: v.mime, data: v.data }, fkey(k)); });
+        return true;
+      },
+      deleteProperty: function (o, k) { delete o[k]; if (LIVE) fdo("readwrite", function (st) { return st.delete(fkey(k)); }); return true; }
+    });
+  }
+  /* A profile saved on this device keeps its files' copies good: they are marked with the profile's new time. */
+  function restamp(rec) {
+    if (!LIVE || !rec || !rec.id) return;
+    var base = fkey(rec.id);
+    fdo("readwrite", function (st) {
+      var q = st.openCursor(IDBKeyRange.bound(base, base + String.fromCharCode(65535)));
+      q.onsuccess = function () {
+        var c = q.result; if (!c) return;
+        if (c.key === base || String(c.key).indexOf(base + "_") === 0) { var v = c.value; v.stamp = String(rec.updatedAt || ""); c.update(v); }
+        c.continue();
+      };
+      return null;
+    });
+  }
+  function getFile(id) {
+    if (resumeCache[id]) return Promise.resolve(resumeCache[id]);
+    return (LIVE ? fdo("readonly", function (st) { return st.get(fkey(id)); }) : Promise.resolve(null)).then(function (hit) {
+      if (hit && hit.data && hit.stamp === stampOf(id)) { var r = { ok: true, mime: hit.mime, data: hit.data, fromDevice: true }; resumeCache[id] = r; return r; }
+      return call("getResume", { id: id }).then(function (r2) { resumeCache[id] = r2; return r2; });
+    });
+  }
+  var resumeCache = cacheBox();
+  /* Getting ready ahead of time: once the app is open, the resumes are brought onto this device quietly, one at a time,
+     so that opening one does not have to wait for Google. It steps aside while something is being saved, skips what the
+     device already has, and picks up again the next time the app is opened. */
+  var warming = false;
+  function warmFiles() {
+    if (!LIVE || warming || !PASS) return;
+    warming = true;
+    fdb().then(function (db) {
+      if (!db) { warming = false; return; }
+      var key = PASS, i = 0, fails = 0;
+      var list = singles.filter(function (s) { return s.resume; }).sort(function (a, b) { return (a.gender === gFilter ? 0 : 1) - (b.gender === gFilter ? 0 : 1); }).map(function (s) { return s.id; });
+      var next = function () {
+        if (PASS !== key || i >= list.length || fails >= 3) { warming = false; return; }
+        if (document.hidden || pending || busy) { setTimeout(next, 3000); return; }
+        var id = list[i++];
+        if (resumeCache[id]) { setTimeout(next, 0); return; }
+        fdo("readonly", function (st) { return st.get(fkey(id)); }).then(function (hit) {
+          if (hit && hit.data && hit.stamp === stampOf(id)) return "have";
+          return send({ action: "getResume", token: key, id: id }).then(function (r) {
+            if (PASS === key && r && r.data) return fdo("readwrite", function (st) { return st.put({ stamp: stampOf(id), mime: r.mime, data: r.data }, fkey(id)); });
+          });
+        }).then(function (x) { fails = 0; setTimeout(next, x === "have" ? 0 : 500); },
+          function (e) { if (!(e && e.error === "noresume")) fails++; setTimeout(next, 4000); });
+      };
+      setTimeout(next, 3000);
+    });
+  }
   function openResume(s, btn, box, label) {
     var w = null; try { w = window.open("", "_blank"); } catch (e) {}
     var show = function (r) {
@@ -966,7 +1056,7 @@ setTimeout(function () {
     };
     if (resumeCache[s.id]) { show(resumeCache[s.id]); return; }
     btn.disabled = true; btn.textContent = "Loading the resume…";
-    call("getResume", { id: s.id }).then(function (r) { resumeCache[s.id] = r; show(r); }).catch(function (e) {
+    getFile(s.id).then(function (r) { show(r); }).catch(function (e) {
       if (w) { try { w.close(); } catch (x) {} }
       btn.disabled = false; btn.textContent = label;
       if (e && e.error === "noresume") toast("No resume file is stored for this person."); else oops(e);
@@ -1012,7 +1102,7 @@ setTimeout(function () {
     return pdfReady;
   }
   function resumeBytes(id) {
-    var got = resumeCache[id] ? Promise.resolve(resumeCache[id]) : call("getResume", { id: id }).then(function (r) { resumeCache[id] = r; return r; });
+    var got = getFile(id);
     return got.then(function (r) {
       var bin = atob(r.data), arr = new Uint8Array(bin.length);
       for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
@@ -1736,7 +1826,7 @@ setTimeout(function () {
     });
     if (m) {   /* boxes at the bottom of an idea: where it is holding, and how many dates */
       var hold = el("div", { class: "chips", role: "group", "aria-label": "Where it is holding" });
-      [["yes", "Gave a yes"], ["middle", "In the middle"], ["ended", "Ended"]].forEach(function (q) {
+      [["yes", "Gave a yes"], ["middle", "Dating"], ["ended", "Ended"]].forEach(function (q) {
         hold.append(el("button", { type: "button", class: "chip", "aria-pressed": m.stage === q[0] ? "true" : "false", text: q[1],
           onclick: function () { if (m.stage !== q[0]) setHolding(m, q[0], q[0] === "middle" ? String(m.dates || "") : "", hold); } }));
       });
@@ -2028,6 +2118,21 @@ setTimeout(function () {
     ];
     var years = { "test-01": "5-7", "test-06": "5-7", "test-04": "1-3", "test-09": "1-3", "test-03": "1-3", "test-07": "3-5", "test-11": "5-7", "test-12": "working", "test-13": "3-5", "test-14": "working", "test-15": "7-10", "test-16": "7-10", "test-17": "3-5", "test-18": "1-3", "test-02": "working", "test-05": "working" };
     people.forEach(function (p) { p.learnYears = years[p.id] || ""; });
+    /* A few shidduchim between the test people, at different points, and two ideas not redt yet. */
+    function X(id, m, f, stage, dates, notes, why) {
+      return { id: id, m: m, f: f, stage: stage, followUp: "", notes: "Test shidduch. " + notes, createdAt: now, updatedAt: now, redtAt: stage === "idea" ? "" : today(), dates: dates, endReason: why || "" };
+    }
+    var pairs = [
+      X("test-m1", "test-01", "test-06", "middle", "4", "Both sides are very positive. Fifth date planned for next week."),
+      X("test-m2", "test-02", "test-07", "middle", "2", "Going nicely. She wants one more date before deciding."),
+      X("test-m3", "test-11", "test-16", "suggested", "", "Redt to both mothers. Waiting to hear back."),
+      X("test-m4", "test-12", "test-17", "checking", "", "Her side is calling references this week."),
+      X("test-m5", "test-03", "test-08", "ended", "", "Went out three times.", "They wanted different things about when to make aliyah."),
+      X("test-m6", "test-13", "test-18", "idea", "", "Similar families, both very warm. Ask her mother first."),
+      X("test-m7", "test-14", "test-19", "idea", "", "Close in age and outlook. Find out if he would live in Queens.")
+    ];
+    var going = { "test-01": 1, "test-06": 1, "test-02": 1, "test-07": 1 };
+    people.forEach(function (p) { if (going[p.id]) p.status = "busy"; });
     var pics = {
       "test-01": portrait("m", "#DCE6F5", "#F0C9A8", "#3A2A20", "#1F2937", "hat", 0, ""), "test-02": portrait("m", "#E6EEDD", "#E9BE9C", "#2A1D16", "#27364F", "kippah", 1, "#14213D"),
       "test-03": portrait("m", "#F3E7D3", "#F2CFB2", "#5A3D28", "#3B5B7A", "kippah", 0, "#7A5C3A"), "test-04": portrait("m", "#E9E1F0", "#EFC6A4", "#6B3F22", "#1F2937", "hat", 1, ""),
@@ -2049,7 +2154,7 @@ setTimeout(function () {
         "References", "Rabbi Test Reference   732-555-0100", "Mrs. Test Reference   718-555-0101"]));
       p.resume = "application/pdf";
     });
-    work(call("bulk", { singles: people, photos: pics, resumes: resumes }), btn).then(function (r) { singles = r.data.singles; matches = r.data.matches; photos = r.photos || photos; render(); }).catch(function () {});
+    work(call("bulk", { singles: people, matches: pairs, photos: pics, resumes: resumes }), btn).then(function (r) { singles = r.data.singles; matches = r.data.matches; photos = r.photos || photos; render(); }).catch(function () {});
   }
 
   /* ---------- wiring ---------- */
