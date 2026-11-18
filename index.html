@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="icon-192.png?v=3">
 <link rel="manifest" href="manifest.json?v=3">
 <title>The Match</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap">
 <style>
 :root {
   --bg: #EEF2F6; --surface: #FFFFFF; --ink: #0F1B2D; --muted: #526074; --line: #D2DAE4;
@@ -223,11 +223,83 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
   #p-singles #groupFilter { flex-wrap: wrap; overflow-x: visible; }   /* the group names are long, so they sit in two neat rows instead of sliding sideways */
   #p-singles #groupFilter .chip { padding: 5px 7px; font-size: .82rem; }
 }
+/* ---------- the new look (only when html has the class "nl") ---------- */
+.agepill, .duo, .mhead { display: none; }
+.topin h1 .t1, .topin h1 .t2 { font: inherit; color: inherit; letter-spacing: inherit; }
+html.nl { --bg: #FAF7F0; --accent: #1B2A4E; --accent-soft: #EEF0F6; --line: #E9E2D3; --muted: #8C8472; }
+html.nl body { background: #FAF7F0; }
+html.nl .top { background: #FAF7F0; border-bottom: 1px solid #E9E2D3; box-shadow: none; }
+html.nl .topin { padding-top: 18px; padding-bottom: 16px; }
+html.nl .topin h1 { font-family: "Playfair Display", Georgia, serif !important; font-weight: 500 !important; font-size: 1.85rem !important; letter-spacing: 0 !important; white-space: nowrap; color: #1B2A4E !important; gap: 0 !important; }
+html.nl .topin h1 .mark { display: none; }
+html.nl .topin h1 .t1, html.nl .topin h1 .t2 { font: inherit !important; letter-spacing: inherit !important; }
+html.nl .topin h1 .t1 { white-space: pre; color: #1B2A4E !important; }
+html.nl .topin h1 .t2 { color: #B8964A !important; }
+html.nl .topin #refresh, html.nl .topin #list, html.nl .topin #acct, html.nl .topin #settings { width: 36px; height: 36px; min-height: 36px; padding: 0; margin-left: 2px; border: 0; border-radius: 50%; font-size: 0; color: transparent; flex: none; background-color: transparent; background-repeat: no-repeat; background-position: center; background-size: 21px 21px; }
+html.nl .topin #refresh:active, html.nl .topin #list:active, html.nl .topin #acct:active, html.nl .topin #settings:active { background-color: #EFE9DB; }
+html.nl .topin #refresh { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2A4E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11a8 8 0 0 0-14.3-4.3L4 8.5'/%3E%3Cpath d='M4 4v4.5h4.5'/%3E%3Cpath d='M4 13a8 8 0 0 0 14.3 4.3l1.7-1.8'/%3E%3Cpath d='M20 20v-4.5h-4.5'/%3E%3C/svg%3E"); }
+html.nl .topin #list { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2A4E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13c3.600-.2 6.200.4 8 1.700'/%3E%3Cpath d='M12 6.5c1.800-1.300 4.400-1.900 8-1.700v13c-3.600-.2-6.200.4-8 1.700'/%3E%3Cpath d='M12 6.500v13'/%3E%3C/svg%3E"); }
+html.nl .topin #acct { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2A4E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.500' r='3.700'/%3E%3Cpath d='M4.800 20c.7-3.700 3.600-5.700 7.200-5.700s6.500 2 7.200 5.700'/%3E%3C/svg%3E"); }
+html.nl .topin #settings { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B2A4E' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1'/%3E%3Ccircle cx='15' cy='7' r='2'/%3E%3Ccircle cx='9' cy='12' r='2'/%3E%3Ccircle cx='17' cy='17' r='2'/%3E%3C/svg%3E"); }
+html.nl #q, html.nl #mineQ { border-radius: 14px; border: 1px solid #E6DFD0; background: #FFFFFF; }
+html.nl #fStatus, html.nl #fStage { border-radius: 999px; border: 1px solid #DCD4C2; background-color: #FFFFFF; color: #4A4536; }
+html.nl .seg { background: transparent; border: 0; gap: 8px; box-shadow: none; }
+html.nl .seg button { border-radius: 999px; border: 1px solid #DCD4C2; background: #FFFFFF; color: #4A4536; font-weight: 500; }
+html.nl .seg button[aria-pressed="true"] { background: #1B2A4E; border-color: #1B2A4E; color: #FFFFFF; }
+html.nl #addSingle, html.nl #addMatch, html.nl #addIdea { border-radius: 999px; background: #FFFFFF; border: 1px solid #DCD4C2; color: #4A4536; font-weight: 500; box-shadow: none; }
+html.nl .btn { border-radius: 12px; }
+html.nl .btn.primary { background: #1B2A4E; border-color: #1B2A4E; color: #FFFFFF; }
+html.nl #addSingle.btn.primary, html.nl #addMatch.btn.primary, html.nl #addIdea.btn.primary { background: #FFFFFF; border-color: #DCD4C2; color: #4A4536; }
+html.nl .chip { border-radius: 999px; padding: 6px 13px; min-height: 36px; background: #FFFFFF; border-color: #DCD4C2; color: #4A4536; font-weight: 500; }
+html.nl .chip[aria-pressed="true"] { background: #1B2A4E; border-color: #1B2A4E; color: #FFFFFF; }
+html.nl .chips .lbl, html.nl #singlesCount, html.nl .count { text-transform: uppercase; letter-spacing: .12em; font-size: .72rem; color: #A2916A; }
+html.nl .card { border-radius: 16px; border-color: #EFE9DC; box-shadow: 0 1px 2px rgba(60, 50, 20, .04), 0 6px 18px rgba(60, 50, 20, .06); }
+/* cards: the photograph is the whole card; a clear strip at the bottom carries the name in white */
+html.nl .tile { position: relative; display: block; aspect-ratio: 3 / 4; border: 0; border-radius: 18px; background: #C9D8EE; overflow: hidden; box-shadow: 0 1px 2px rgba(60, 50, 20, .05), 0 8px 20px rgba(60, 50, 20, .09); transition: transform .14s ease; }
+html.nl .tile:active { transform: scale(.97); }
+html.nl .tile .av { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; object-fit: cover; object-position: center 20%; }
+html.nl .tile .av.ph { background: linear-gradient(180deg, #C9D8EE 0%, #8FA9CF 100%); color: #FFFFFF; font-family: "Playfair Display", Georgia, serif; font-size: 2.6rem; font-weight: 400; padding-bottom: 24%; }
+html.nl .tile.g-f .av.ph { background: linear-gradient(180deg, #F3D9DE 0%, #E3AEBB 100%); }
+html.nl .tile::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 42%; pointer-events: none; background: linear-gradient(180deg, rgba(20, 30, 60, 0) 0%, rgba(20, 30, 60, .38) 100%); }
+html.nl .tile .tb { position: absolute; z-index: 1; left: 7px; right: 7px; bottom: 7px; padding: 6px 11px 7px; border-radius: 14px; gap: 1px; background: rgba(150, 190, 245, .16); -webkit-backdrop-filter: blur(4px) saturate(1.2); backdrop-filter: blur(4px) saturate(1.2); border: 1px solid rgba(255, 255, 255, .38); }
+html.nl .tile.g-f .tb { background: rgba(250, 170, 195, .16); }
+html.nl .tile .nm { font-family: "Playfair Display", Georgia, serif; font-weight: 500; font-size: 1rem; line-height: 1.2; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+html.nl .tile .sub { color: rgba(255, 255, 255, .92); font-size: .78rem; text-shadow: 0 1px 2px rgba(0, 0, 0, .55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+html.nl .tile .sub ~ .sub, html.nl .tile .sub .ag, html.nl .tile .sub:empty { display: none; }
+html.nl .tile .agepill { display: block; position: absolute; z-index: 1; top: 9px; right: 9px; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: .74rem; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); background: rgba(20, 30, 60, .24); border: 1px solid rgba(255, 255, 255, .45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+html.nl .tile .pill { margin-top: 3px; }
+/* shidduchim and my ideas: a heading, three counts, and rows with the two faces overlapping */
+html.nl .mhead { display: block; }
+html.nl .mhead h2, html.nl #mineList > h2 { font-family: "Playfair Display", Georgia, serif; font-weight: 500; font-size: 1.35rem; color: #1B2A4E; margin: 2px 2px 12px; }
+html.nl .mstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 14px; }
+html.nl .mstat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 13px 4px 11px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EFE9DC; cursor: pointer; min-width: 0; }
+html.nl .mstat .num { font-family: "Playfair Display", Georgia, serif; font-size: 1.3rem; font-weight: 600; color: #1B2A4E; line-height: 1.1; }
+html.nl .mstat.eng .num { color: #B8964A; }
+html.nl .mstat .lab { font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: #8C8472; }
+html.nl .row { border-radius: 16px; border-color: #EFE9DC; box-shadow: 0 1px 2px rgba(60, 50, 20, .04), 0 6px 16px rgba(60, 50, 20, .05); }
+html.nl .row.pairrow { padding: 16px 14px; gap: 12px; }
+html.nl .row.pairrow > .av { display: none; }
+html.nl .duo { display: flex; flex: none; }
+html.nl .duo > span { display: block; width: 50px; height: 50px; border-radius: 50%; overflow: hidden; border: 2px solid #FFFFFF; box-shadow: 0 1px 4px rgba(27, 42, 78, .14); }
+html.nl .duo > span + span { margin-left: -14px; }
+html.nl .duo .av { width: 100%; height: 100%; border-radius: 0; object-fit: cover; }
+html.nl .duo .av.ph { font-family: "Playfair Display", Georgia, serif; font-weight: 400; font-size: 1rem; color: #FFFFFF; background: linear-gradient(180deg, #C9D8EE 0%, #8FA9CF 100%); }
+html.nl .duo .df .av.ph { background: linear-gradient(180deg, #F3D9DE 0%, #E3AEBB 100%); }
+html.nl .row.pairrow .r1 { align-items: center; }
+html.nl .row.pairrow .nm { font-family: "Playfair Display", Georgia, serif; font-weight: 500; font-size: 1.02rem; color: #1B2A4E; }
+html.nl .row.pairrow .sub { color: #8C8472; font-size: .8rem; }
+html.nl .pill { font-weight: 600; font-size: .74rem; padding: 4px 11px; background: #EEF0F4; color: #4A5568; }
+html.nl .pill.engaged, html.nl .pill.married { background: #E3F1E6; color: #2F7A45; }
+html.nl .pill.dating, html.nl .pill.middle, html.nl .pill.busy { background: #FBEFD5; color: #9A6A12; }
+html.nl .pill.ended, html.nl .pill.closed { background: #F6E3E3; color: #A23B3B; }
+html.nl .tabs { background: #FAF7F0; border-top: 1px solid #E9E2D3; }
+html.nl .tabs button { color: #A89F8A; border-top-color: transparent; font-weight: 500; }
+html.nl .tabs button[aria-current="page"] { color: #1B2A4E; font-weight: 700; border-top-color: transparent; }
 </style>
 </head>
 <body>
 <div id="splash" class="splash" aria-hidden="true"><svg class="sp-mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#F7F3EC" stroke-width="20"/></svg><div class="sp-the">The</div><div class="sp-name">Match</div></div>
-<header class="top"><div class="wrap topin"><h1><svg class="mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="currentColor" stroke-width="20"/></svg>The Match</h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button></div></div></header>
+<header class="top"><div class="wrap topin"><h1><svg class="mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="currentColor" stroke-width="20"/></svg><span class="t1">The </span><span class="t2">Match</span></h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button></div></div></header>
 <div id="note" class="wrap note" hidden><div id="noteText"></div></div>
 <div id="update" class="wrap note" hidden><div>A newer version of The Match is ready. <a id="updateGo" target="_top" href="#">Tap here to update</a></div></div>
 
@@ -258,6 +330,7 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
   </section>
 
   <section id="p-matches" hidden>
+    <div id="mhead" class="mhead"></div>
     <div id="due"></div>
     <div class="tools">
       <select id="fStage" aria-label="Stage">
@@ -335,6 +408,13 @@ setTimeout(function () {
 <script>
 (function () {
   "use strict";
+  /* The new look is still being tried out. It is switched on for one device by opening the app once with ?look=new
+     at the end of the address, and off again with ?look=old. Without that, the app looks as it always has. */
+  try {
+    var lookPick = (location.search.match(/[?&]look=(new|old)/) || [])[1];
+    if (lookPick) localStorage.setItem("tm-look", lookPick);
+    if (localStorage.getItem("tm-look") === "new") document.documentElement.classList.add("nl");
+  } catch (e) {}
   /* Night look is a choice: the Night button turns it on or off and this device remembers it. The app never goes dark by itself. */
   function setNight(on) {
     document.documentElement.setAttribute("data-theme", on ? "dark" : "light");
@@ -459,7 +539,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 60, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 61, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -850,10 +930,12 @@ setTimeout(function () {
   /* One square card in the Singles grid: picture, then name, age and where they are from, and years of learning. */
   function singleTile(s, onclick) {
     var st = s.status || "available", a = ageOf(s), ly = learnText(s);
-    return el("button", { type: "button", class: "tile", onclick: onclick }, avatar(s, "pic"),
+    var top = [a != null ? a : null, s.height].filter(Boolean).join(" · ");
+    return el("button", { type: "button", class: "tile g-" + (s.gender === "f" ? "f" : "m"), onclick: onclick }, avatar(s, "pic"),
+      top ? el("span", { class: "agepill", text: top }) : null,
       el("div", { class: "tb" },
         el("div", { class: "nm", text: s.name }),
-        el("div", { class: "sub", text: [a != null ? a : null, s.city].filter(Boolean).join(" · ") }),
+        el("div", { class: "sub" }, a != null ? el("span", { class: "ag", text: a + (s.city ? " · " : "") }) : null, s.city || ""),
         ly ? el("div", { class: "sub", text: tileLearn(s) }) : null,
         st !== "available" ? pill(st, STATUS[st] || st) : null));
   }
@@ -866,18 +948,31 @@ setTimeout(function () {
   }
   /* What a shidduch shows on the list: "Dating, 6 dates" when the number of dates is set. */
   function stageText(m) { return (STAGE[m.stage] || m.stage) + (m.stage === "middle" && m.dates ? ", " + m.dates + (String(m.dates) === "1" ? " date" : " dates") : ""); }
+  /* The two people of a shidduch as two overlapping round pictures (new look only). */
+  function duo(m) {
+    var him = byId(m.m), her = byId(m.f);
+    return el("span", { class: "duo" }, him ? el("span", { class: "dm" }, avatar(him)) : null, her ? el("span", { class: "df" }, avatar(her)) : null);
+  }
   function matchRow(m) {
     var bits = [];
     if (m.followUp && OPEN.indexOf(m.stage) >= 0) bits.push("Follow up " + fmtDate(m.followUp));
     if (m.notes) bits.push(String(m.notes).split("\n")[0].slice(0, 90));
-    return el("button", { type: "button", class: "row", onclick: function () { openMatchForm(m.id); } },
+    return el("button", { type: "button", class: "row pairrow", onclick: function () { openMatchForm(m.id); } }, duo(m),
       el("div", { class: "rb" },
         el("div", { class: "r1" }, el("span", { class: "nm", text: nameOf(m.m) + " & " + nameOf(m.f) }), pill(m.stage, stageText(m))),
         bits.length ? el("div", { class: "sub", text: bits.join(" · ") }) : null));
   }
   function renderMatches() {
     var box = $("matchList"), dueBox = $("due"); box.textContent = ""; dueBox.textContent = "";
+    var head = $("mhead"); head.textContent = "";
     if (!loaded) return;
+    var count = function (stages) { return matches.filter(function (m) { return stages.indexOf(m.stage) >= 0; }).length; };
+    var stat = function (num, label, stage, cls) {
+      return el("button", { type: "button", class: "mstat " + cls, onclick: function () { $("fStage").value = stage; renderMatches(); } },
+        el("span", { class: "num", text: String(num) }), el("span", { class: "lab", text: label }));
+    };
+    head.append(el("h2", { text: "Shidduchim" }), el("div", { class: "mstats" },
+      stat(count(["engaged"]), "Engaged", "engaged", "eng"), stat(count(["dating", "middle"]), "Dating", "middle", ""), stat(count(["suggested", "checking", "yes"]), "Suggested", "suggested", "")));
     var due = matches.filter(isDue).sort(function (a, b) { return a.followUp < b.followUp ? -1 : 1; });
     if (due.length) dueBox.append(el("div", { class: "block" }, el("h3", { text: "Follow up now" }), due.map(matchRow)));
     if (!matches.length) {
@@ -918,7 +1013,7 @@ setTimeout(function () {
   function ideaCard(m) {
     var him = byId(m.m), her = byId(m.f);
     return el("div", { class: "card" },
-      el("button", { type: "button", class: "row", onclick: function () { openMatchForm(m.id); } },
+      el("button", { type: "button", class: "row pairrow", onclick: function () { openMatchForm(m.id); } }, duo(m),
         him ? avatar(him) : null, her ? avatar(her) : null,
         el("div", { class: "rb" },
           el("div", { class: "r1" }, el("span", { class: "nm", text: nameOf(m.m) + " & " + nameOf(m.f) }), m.stage !== "idea" ? pill(m.stage, stageText(m)) : null),
