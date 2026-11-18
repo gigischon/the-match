@@ -416,6 +416,8 @@ html.nl main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .picks button[aria-pressed="true"] { background: var(--accent-soft); }
 .picks .none { margin: 0; padding: 10px 12px; color: var(--muted); }
 .qcard { white-space: pre-wrap; line-height: 1.55; margin-top: 12px; }
+.gside { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.gside h3 { margin: 0 0 4px; }
 </style>
 </head>
 <body>
@@ -610,6 +612,9 @@ setTimeout(function () {
   /* Each account keeps its own list of groups (Settings). An account that has not set one up yet gets the first
      list the app had, but only if its people already carry group tags; a new account starts with none. */
   var FIRST_GROUPS = ["Kesher", "Kesher Boys", "Raintree", "Hope", "Shidduch Circle Working", "Shidduch Circle Learning"], GROUPS = [], groupSel = [];
+  /* The boys and the girls each have their own groups (Settings). GROUPS is every group in either list. */
+  var GM = [], GF = [], FIRST_M = ["Kesher Boys", "Shidduch Circle Working", "Shidduch Circle Learning"], FIRST_F = ["Kesher", "Raintree", "Hope"];
+  function gList(g) { return g === "f" ? GF : GM; }
   function cleanGroups(list) {
     var out = [];
     (list || []).forEach(function (v) {
@@ -625,7 +630,12 @@ setTimeout(function () {
       singles.forEach(function (s) { String(s.groups || "").split(",").forEach(function (v) { if (v && used.indexOf(v) < 0) used.push(v); }); });
       GROUPS = used.length ? cleanGroups(FIRST_GROUPS.concat(used.filter(function (v) { return v !== "Working"; }))) : [];
     }
-    groupSel = groupSel.filter(function (v) { return GROUPS.indexOf(v) >= 0; });
+    if (Array.isArray(prefs.groupsM) || Array.isArray(prefs.groupsF)) { GM = cleanGroups(prefs.groupsM); GF = cleanGroups(prefs.groupsF); }
+    else {   // an account from before the two lists: the first groups go to the side they belong to, anything else to both
+      GM = GROUPS.filter(function (v) { return FIRST_F.indexOf(v) < 0; });
+      GF = GROUPS.filter(function (v) { return FIRST_M.indexOf(v) < 0; });
+    }
+    GROUPS = cleanGroups(GM.concat(GF));
     renderGroupFilter();
   }
   function groupsOf(s) { return String((s && s.groups) || "").split(",").filter(function (v) { return GROUPS.indexOf(v) >= 0; }); }
@@ -634,7 +644,9 @@ setTimeout(function () {
     return GROUPS.filter(function (x) { return out.indexOf(x) >= 0; });
   }
   function renderGroupFilter() {
-    var box = $("groupFilter"); box.textContent = ""; box.hidden = !GROUPS.length;
+    var mine = gList(gFilter);   // only the groups of the side that is showing
+    groupSel = groupSel.filter(function (v) { return mine.indexOf(v) >= 0; });
+    var box = $("groupFilter"); box.textContent = ""; box.hidden = !mine.length;
     box.append(el("span", { class: "lbl", text: "Group" }));
     var chip = function (value, label) {
       var on = value === "" ? !groupSel.length : groupSel.indexOf(value) >= 0;
@@ -644,7 +656,7 @@ setTimeout(function () {
       } }));
     };
     chip("", "All");
-    GROUPS.forEach(function (v) { chip(v, v); });
+    mine.forEach(function (v) { chip(v, v); });
   }
   function renderLearnFilter() {
     var box = $("learnFilter"); box.textContent = "";
@@ -661,7 +673,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 72, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 73, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -745,8 +757,10 @@ setTimeout(function () {
   function pill(kind, label) { return el("span", { class: "pill " + kind, text: label }); }
   function fmtDate(d) { if (!d) return ""; var p = d.split("-"); return p.length === 3 ? Number(p[1]) + "/" + Number(p[2]) + "/" + p[0] : d; }
   function isDue(m) { return m.followUp && m.followUp <= today() && OPEN.indexOf(m.stage) >= 0; }
+  /* Brackets in a name, as in (Chaim) Eliezer, are not part of how it is put in order or of its initials: that name counts as Chaim Eliezer. */
+  function sortName(s) { return String((s && s.name) || "").replace(/[()\[\]{}"]/g, "").replace(/\s+/g, " ").trim(); }
   function initials(s, cls) {
-    var parts = String(s.name || "").replace(/^TEST\s+/, "").trim().split(/\s+/);
+    var parts = sortName(s).replace(/^TEST\s+/, "").trim().split(/\s+/);
     var t = (parts[0] || "?").charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : "");
     return el("span", { class: "av ph" + (cls ? " " + cls : ""), "aria-hidden": "true", text: t.toUpperCase() });
   }
@@ -1001,7 +1015,7 @@ setTimeout(function () {
   function signOut(action) {
     call(action).catch(function () {}).then(function () {
       PASS = ""; ME = ""; try { localStorage.removeItem(KEEP); } catch (e) {}
-      delete prefs.groups; GROUPS = []; groupSel = [];
+      delete prefs.groups; delete prefs.groupsM; delete prefs.groupsF; GROUPS = []; GM = []; GF = []; groupSel = [];
       singles = []; matches = []; photos = {}; resumeCache = cacheBox(); fdo("readwrite", function (st) { return st.clear(); }); ideas = null; loaded = false;
       closeSheet(); render(); note(""); showGate("in", "You are signed out.");
     });
@@ -1054,7 +1068,7 @@ setTimeout(function () {
       if (q && [s.name, s.city, s.education,   /* the search box looks at the name, city and yeshiva; not family or notes */
         learnOf(s).join(" ") + " " + learnText(s)].join(" ").toLowerCase().indexOf(q) < 0) return false;
       return true;
-    }).sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+    }).sort(function (a, b) { return sortName(a).localeCompare(sortName(b)); });
     $("singlesCount").textContent = q ? rows.length + " found" : "Showing " + rows.length + " of " + singles.filter(function (s) { return s.gender === gFilter; }).length + (gFilter === "f" ? " girls" : " boys");
     if (!rows.length) { box.append(el("div", { class: "empty" }, el("p", { text: "Nobody matches that search." }))); return; }
     if (q) {   // name matches first; people who only match by city or yeshiva go under their own heading
@@ -1071,7 +1085,7 @@ setTimeout(function () {
         el("button", { type: "button", class: "btn", text: "Also show " + others.length + " with that in their city or yeshiva", onclick: function () { moreQ = q; renderSingles(); } })));
       return;
     }
-    rows.sort(function (a, b) { var da = dayOf(a), dz = dayOf(b); return da === dz ? String(a.name).localeCompare(String(b.name)) : (da < dz ? 1 : -1); });
+    rows.sort(function (a, b) { var da = dayOf(a), dz = dayOf(b); return da === dz ? sortName(a).localeCompare(sortName(b)) : (da < dz ? 1 : -1); });
     var lastDay = null;   // newest first; no date headings
     rows.forEach(function (s) {
       var day = dayOf(s);
@@ -1141,7 +1155,7 @@ setTimeout(function () {
   function renderIdeaPicker() {
     var sel = $("ideaFor"), cur = sel.value; sel.textContent = "";
     var list = singles.filter(function (s) { var st = s.status || "available"; return st === "available" || st === "hold"; })
-      .sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+      .sort(function (a, b) { return sortName(a).localeCompare(sortName(b)); });
     if (!list.length) { sel.append(el("option", { value: "", text: "Add singles first" })); $("ideaGo").disabled = true; return; }
     $("ideaGo").disabled = false;
     list.forEach(function (s) { sel.append(el("option", { value: s.id, text: s.name + " (" + subline(s) + ")" })); });
@@ -1423,7 +1437,8 @@ setTimeout(function () {
     body.append(el("h3", { text: "Years of learning" }), el("p", { class: "msg", text: "Press one or more. Press again to take one off." }), tags);
     /* Group tags on the profile: tap to put one on or take it off; it saves right away. */
     var gTags = el("div", { class: "chips", role: "group", "aria-label": "Group" });
-    GROUPS.forEach(function (v) {
+    var sideGroups = gList(s.gender).concat(groupsOf(s).filter(function (v) { return gList(s.gender).indexOf(v) < 0; }));
+    sideGroups.forEach(function (v) {
       gTags.append(el("button", { type: "button", class: "chip", "aria-pressed": groupsOf(s).indexOf(v) >= 0 ? "true" : "false", text: v, onclick: function () {
         if (busy) return;
         gTags.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
@@ -1431,7 +1446,7 @@ setTimeout(function () {
         work(call("saveSingle", { record: u })).then(function () { put(singles, u); render(); }).catch(function () { render(); });
       } }));
     });
-    body.append(el("h3", { text: "Group" }), el("p", { class: "msg", text: GROUPS.length ? "Press one or more. Press again to take one off." : "You have no groups yet. Add your own under Settings (the round button at the top)." }), gTags);
+    body.append(el("h3", { text: "Group" }), el("p", { class: "msg", text: sideGroups.length ? "Press one or more. Press again to take one off." : "You have no groups yet. Add your own under Settings (the round button at the top)." }), gTags);
     /* Single or Engaged: tap to set it on this person; it saves right away. */
     var stBox = el("div", { class: "chips", role: "group", "aria-label": "Status" });
     QUICK.slice(1).forEach(function (q) {
@@ -1924,10 +1939,15 @@ setTimeout(function () {
     if (!saved || typeof saved !== "object") return;
     ["night", "size", "initials", "name"].forEach(function (k) { if (saved[k] !== undefined) prefs[k] = saved[k]; });   // the app always opens on Boys
     if (Array.isArray(saved.groups)) prefs.groups = saved.groups; else delete prefs.groups;
+    ["groupsM", "groupsF"].forEach(function (k) { if (Array.isArray(saved[k])) prefs[k] = saved[k]; else delete prefs[k]; });
     applyPrefs(); render();
   }
   function setPref(k, v) { prefs[k] = v; applyPrefs(); call("saveSettings", { settings: prefs }); if (sheet && sheet.type === "settings") openSettings(); }
-  function setGroups(list) { prefs.groups = cleanGroups(list); syncGroups(); call("saveSettings", { settings: prefs }); render(); if (sheet && sheet.type === "settings") openSettings(); }
+  function setGroups(g, list) {   // g: "m" the boys' groups, "f" the girls'
+    prefs.groupsM = g === "m" ? cleanGroups(list) : GM.slice(); prefs.groupsF = g === "f" ? cleanGroups(list) : GF.slice();
+    prefs.groups = cleanGroups(prefs.groupsM.concat(prefs.groupsF));
+    syncGroups(); call("saveSettings", { settings: prefs }); render(); if (sheet && sheet.type === "settings") openSettings();
+  }
   /* Settings is a short list of one-line rows; tapping a row opens it. A row stays open while you change things in it. */
   var openSet = {};
   function sect(title) {
@@ -1937,24 +1957,29 @@ setTimeout(function () {
     return d;
   }
   function groupsCard() {
-    var name = el("input", { type: "text", maxlength: "40", placeholder: "Name of a new group", "aria-label": "Name of a new group" });
-    var add = function () {
-      var v = cleanGroups([name.value])[0];
-      if (!v) { toast("Type the name of the group first."); return; }
-      if (GROUPS.indexOf(v) >= 0) { toast("You already have that group."); return; }
-      if (GROUPS.length >= 20) { toast("You can have up to 20 groups."); return; }
-      setGroups(GROUPS.concat([v]));
+    var side = function (g, title) {
+      var cur = gList(g);
+      var name = el("input", { type: "text", maxlength: "40", placeholder: "Name of a new group", "aria-label": "Name of a new group for " + title.toLowerCase() });
+      var add = function () {
+        var v = cleanGroups([name.value])[0];
+        if (!v) { toast("Type the name of the group first."); return; }
+        if (cur.indexOf(v) >= 0) { toast("That group is already there."); return; }
+        if (cur.length >= 20) { toast("You can have up to 20 groups."); return; }
+        setGroups(g, cur.concat([v]));
+      };
+      name.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } });
+      var rows = cur.map(function (v) {
+        return el("div", { class: "acts", style: "justify-content:space-between;align-items:center;margin-top:6px" },
+          el("span", { text: v }),
+          el("button", { type: "button", class: "btn", text: "Remove", "aria-label": "Remove the group " + v, onclick: function () { setGroups(g, cur.filter(function (x) { return x !== v; })); toast("Removed " + v); } }));
+      });
+      return el("div", { class: "gside" }, el("h3", { text: title }),
+        rows.length ? el("div", {}, rows) : el("p", { class: "msg", text: "None yet." }),
+        el("div", { class: "acts", style: "margin-top:10px" }, name, el("button", { type: "button", class: "btn primary", text: "Add", onclick: add })));
     };
-    name.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } });
-    var rows = GROUPS.map(function (v) {
-      return el("div", { class: "acts", style: "justify-content:space-between;align-items:center;margin-top:6px" },
-        el("span", { text: v }),
-        el("button", { type: "button", class: "btn", text: "Remove", "aria-label": "Remove the group " + v, onclick: function () { setGroups(GROUPS.filter(function (x) { return x !== v; })); toast("Removed " + v); } }));
-    });
     return sect("Groups",
-      el("p", { class: "msg", text: "These are the Group buttons on your list and on each person. They are yours only: someone you give the app to makes their own." }),
-      rows.length ? el("div", {}, rows) : el("p", { class: "msg", text: "You have no groups yet." }),
-      el("div", { class: "acts", style: "margin-top:10px" }, name, el("button", { type: "button", class: "btn primary", text: "Add group", onclick: add })));
+      el("p", { class: "msg", text: "The Group buttons on your list. The boys and the girls each have their own. They are yours only: someone you give the app to makes their own." }),
+      side("m", "Boys groups"), side("f", "Girls groups"));
   }
   function openSettings() {
     openSheet("Settings", "settings", null);
@@ -2168,7 +2193,7 @@ setTimeout(function () {
   function personSelect(id, gender, val, locked) {
     var sel = el("select", { id: id, disabled: locked });
     sel.append(el("option", { value: "", text: "Choose" }));
-    singles.filter(function (s) { return s.gender === gender; }).sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); })
+    singles.filter(function (s) { return s.gender === gender; }).sort(function (a, b) { return sortName(a).localeCompare(sortName(b)); })
       .forEach(function (s) { sel.append(el("option", { value: s.id, text: s.name + " (" + subline(s) + ")" })); });
     sel.value = val || "";
     return sel;
@@ -2559,7 +2584,7 @@ setTimeout(function () {
     b.addEventListener("click", function () {
       gFilter = b.dataset.g;
       document.querySelectorAll(".seg button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-      renderSingles();
+      renderGroupFilter(); renderSingles();
     });
   });
   $("lightbox").addEventListener("click", function () { $("lightbox").hidden = true; $("lightImg").removeAttribute("src"); });
