@@ -622,7 +622,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 63, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 64, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -824,7 +824,7 @@ setTimeout(function () {
       if (LIVE && !REMOTE && URLKEY === PASS && r.keyAge != null && r.keyAge < 600000) note("You are signed in. Do this once on this device: tap the Share button, choose Add to Home Screen, and from now on open The Match from that new icon. It will not ask you to sign in again. To give the app to someone else, use Account and send the plain link, never this page.");
 
       return quiet && Object.keys(photos).length ? null : call("photos");   // pictures are fetched once, not on every background refresh
-    }).then(function (r) { if (r) { photos = r.photos || {}; render(); } demoStart(); warmFiles(); }).catch(function (e) { note(""); oops(e); });
+    }).then(function (r) { if (r) { photos = r.photos || {}; render(); } demoStart(); warmFiles(); setTimeout(warmList, 6000); }).catch(function (e) { note(""); oops(e); });
   }
 
   /* ---------- sign in, create an account, stay signed in ---------- */
@@ -905,6 +905,11 @@ setTimeout(function () {
     openSheet("Account", "account", null);
     var body = $("sheetBody");
     body.append(el("p", { text: "Signed in as " + (ME || "your account") + ". Your list is private to this account." }));
+    body.append(el("div", { class: "card" },
+      el("h3", { text: "Your name" }),
+      el("p", { class: "msg", text: "Your initials show in the circle at the top." }),
+      el("input", { type: "text", maxlength: "60", value: prefs.name || "", placeholder: "First and last name", autocomplete: "name", "aria-label": "Your name",
+        onchange: function (e) { setPref("name", String(e.currentTarget.value || "").replace(/\s+/g, " ").trim().slice(0, 60)); toast("Saved"); } })));
     if (LIVE && APP_URL && PASS && !REMOTE) {
       body.append(el("div", { class: "card" },
         el("h3", { text: "Stay signed in on this device" }),
@@ -1554,13 +1559,49 @@ setTimeout(function () {
   var bigList = { text: null, pdf: null, q: "" };
   function b64Bytes(b64) { var bin = atob(b64), arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); return arr; }
   function bytesB64(bytes) { var out = "", step = 0x8000; for (var i = 0; i < bytes.length; i += step) out += String.fromCharCode.apply(null, bytes.subarray(i, i + step)); return btoa(out); }
+  /* The List (its words and the book itself) is kept on this device too, so after the first time it opens without
+     waiting for Google. If a different book is stored in the account later, the device notices and fetches it. */
+  function listSig(t) { return [t.name, t.n, t.parts].join("|"); }
+  function keepListText(t) { if (LIVE) fdo("readwrite", function (st) { return st.put({ t: t }, fkey("~list-text")); }); }
+  function listTextFromGoogle(token) {
+    return (token ? send({ action: "getList", token: token, part: "text" }) : call("getList", { part: "text" })).then(function (r) { return JSON.parse(decodeURIComponent(escape(atob(r.data)))); });
+  }
+  function warmList() {   // quietly, once the app is open: fetch the List onto this device if it is not here yet
+    if (!LIVE || !PASS || bigList.text || bigList.pdf) return;
+    var key = PASS;
+    fdo("readonly", function (st) { return st.get(fkey("~list-text")); }).then(function (hit) {
+      if (hit && hit.none) return null;
+      if (hit && hit.t) return hit.t;
+      return listTextFromGoogle(key).then(function (t) { if (PASS === key) keepListText(t); return t; }, function (e) {
+        if (e && e.error === "noresume") fdo("readwrite", function (st) { return st.put({ none: true }, fkey("~list-text")); });
+        return null;
+      });
+    }).then(function (t) {
+      if (!t || PASS !== key || bigList.pdf) return;
+      return fdo("readonly", function (st) { return st.getKey(fkey("~list-pdf")); }).then(function (has) {
+        if (has || PASS !== key || bigList.pdf) return;
+        bigList.text = bigList.text || t;
+        return listPdf(t);
+      });
+    }).catch(function () {});
+  }
   function openList() {
     openSheet("List", "list", null);
     var body = $("sheetBody"), msg = el("p", { class: "msg", text: "Opening your list…" });
     body.append(msg);
-    var ready = bigList.text ? Promise.resolve(bigList.text) : call("getList", { part: "text" }).then(function (r) {
-      bigList.text = JSON.parse(decodeURIComponent(escape(atob(r.data)))); return bigList.text;
-    });
+    var ready = bigList.text ? Promise.resolve(bigList.text)
+      : (LIVE ? fdo("readonly", function (st) { return st.get(fkey("~list-text")); }) : Promise.resolve(null)).then(function (hit) {
+          if (hit && hit.t) {   // shown at once from this device; Google is asked in the background whether the book has changed
+            bigList.text = hit.t;
+            listTextFromGoogle().then(function (t) {
+              if (listSig(t) === listSig(hit.t) && t.cards.length === hit.t.cards.length) return;
+              bigList.text = t; bigList.pdf = null; keepListText(t);
+              if (sheet && sheet.type === "list" && !sheet.id) showList(t);
+            }, function () {});
+            return hit.t;
+          }
+          return listTextFromGoogle().then(function (t) { bigList.text = t; keepListText(t); return t; });
+        });
     ready.then(function (t) { if (sheet && sheet.type === "list") showList(t); }, function (e) {
       if (!sheet || sheet.type !== "list") return;
       if (e && e.error === "signin") { oops(e); return; }
@@ -1600,13 +1641,20 @@ setTimeout(function () {
     status("Saving the words for searching…");
     await send({ action: "saveList", token: PASS, part: "text", mime: "text/plain", data: btoa(unescape(encodeURIComponent(JSON.stringify(t)))) });
     bigList.text = t; bigList.pdf = Promise.resolve(pdf);
+    keepListText(t); if (LIVE) fdo("readwrite", function (st) { return st.put({ sig: listSig(t), bytes: buf }, fkey("~list-pdf")); });
   }
   function listPdf(t) {
     if (!bigList.pdf) bigList.pdf = (async function () {
-      var chunks = [], total = 0;
-      for (var i = 0; i < t.parts; i++) { var b = b64Bytes((await call("getList", { part: "pdf" + i })).data); chunks.push(b); total += b.length; }
-      var all = new Uint8Array(total), at = 0;
-      chunks.forEach(function (c) { all.set(c, at); at += c.length; });
+      var sig = listSig(t), kept = LIVE ? await fdo("readonly", function (st) { return st.get(fkey("~list-pdf")); }) : null, all;
+      if (kept && kept.sig === sig && kept.bytes && kept.bytes.length) all = kept.bytes;   // the book is already on this device
+      else {
+        var chunks = [], total = 0;
+        for (var i = 0; i < t.parts; i++) { var b = b64Bytes((await call("getList", { part: "pdf" + i })).data); chunks.push(b); total += b.length; }
+        all = new Uint8Array(total); var at = 0;
+        chunks.forEach(function (c) { all.set(c, at); at += c.length; });
+        var copy = all.slice(0);   // the reader below takes the bytes for itself, so the device gets its own copy
+        if (LIVE) fdo("readwrite", function (st) { return st.put({ sig: sig, bytes: copy }, fkey("~list-pdf")); });
+      }
       return (await loadPdf()).getDocument({ data: all }).promise;
     })().catch(function (e) { bigList.pdf = null; throw e; });
     return bigList.pdf;
@@ -1646,7 +1694,7 @@ setTimeout(function () {
       listPdf(t).then(function (pdf) { return readCards(pdf, function (s) { msg.textContent = s; }).then(function (cards) {
         var fresh = { parts: t.parts, n: pdf.numPages, cards: cards, name: t.name || "" };
         msg.textContent = "Saving…";
-        return send({ action: "saveList", token: PASS, part: "text", mime: "text/plain", data: btoa(unescape(encodeURIComponent(JSON.stringify(fresh)))) }).then(function () { bigList.text = fresh; });
+        return send({ action: "saveList", token: PASS, part: "text", mime: "text/plain", data: btoa(unescape(encodeURIComponent(JSON.stringify(fresh)))) }).then(function () { bigList.text = fresh; keepListText(fresh); });
       }); }).then(function () { if (sheet && sheet.type === "list") showList(bigList.text); }, function (e) {
         if (e && e.error === "signin") oops(e); else msg.textContent = "The list could not be prepared. Check your connection, go back and try again.";
       });
@@ -1727,7 +1775,11 @@ setTimeout(function () {
   }
   /* Settings. They are saved with the account, so they follow the person to every device, and each person who uses the app has their own. */
   var prefs = { night: nightOn, size: "", start: "m" }, startUsed = false;
-  function showIni() { $("acct").setAttribute("data-ini", String(prefs.initials || (ME && ME !== "preview" ? ME.charAt(0) : "") || "").toUpperCase().slice(0, 3)); }
+  function showIni() {   // the circle at the top: first letters of the first and last name; before a name is given, the first letter of the email
+    var parts = String(prefs.name || "").trim().split(/\s+/).filter(Boolean);
+    var ini = parts.length ? parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : "") : (prefs.initials || (ME && ME !== "preview" ? ME.charAt(0) : "") || "");
+    $("acct").setAttribute("data-ini", String(ini).toUpperCase().slice(0, 3));
+  }
   function applyPrefs() {
     showIni();
     nightOn = !!prefs.night; setNight(nightOn);
@@ -1742,7 +1794,7 @@ setTimeout(function () {
   }
   function usePrefs(saved) {
     if (!saved || typeof saved !== "object") return;
-    ["night", "size", "initials"].forEach(function (k) { if (saved[k] !== undefined) prefs[k] = saved[k]; });   // the app always opens on Boys
+    ["night", "size", "initials", "name"].forEach(function (k) { if (saved[k] !== undefined) prefs[k] = saved[k]; });   // the app always opens on Boys
     if (Array.isArray(saved.groups)) prefs.groups = saved.groups; else delete prefs.groups;
     applyPrefs(); render();
   }
@@ -1787,9 +1839,7 @@ setTimeout(function () {
     $("sheetBody").append(
       sect("Display",
         el("p", { class: "msg", text: "Night look uses dark colors for the evening. The app never changes this by itself." }), pick("night", [[false, "Day"], [true, "Night"]]),
-        el("p", { class: "msg", text: "Size of the wording" }), pick("size", [["s", "Small"], ["", "Regular"], ["l", "Larger"], ["xl", "Largest"]]),
-        el("p", { class: "msg", text: "Your initials, shown in the circle at the top" }),
-        el("input", { type: "text", maxlength: "3", value: prefs.initials || "", placeholder: "For example GS", "aria-label": "Your initials", style: "max-width:140px;text-transform:uppercase", onchange: function (e) { setPref("initials", String(e.currentTarget.value || "").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 3)); } })),
+        el("p", { class: "msg", text: "Size of the wording" }), pick("size", [["s", "Small"], ["", "Regular"], ["l", "Larger"], ["xl", "Largest"]])),
       groupsCard(),
       sect("Your list",
         el("p", { text: singles.length + (singles.length === 1 ? " person is" : " people are") + " saved: " + singles.filter(function (x) { return x.gender !== "f"; }).length + " boys and " + singles.filter(function (x) { return x.gender === "f"; }).length + " girls. " + singles.filter(function (x) { return (x.status || "available") === "available"; }).length + " are single." }),
