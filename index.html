@@ -418,6 +418,7 @@ html.nl main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .qcard { white-space: pre-wrap; line-height: 1.55; margin-top: 12px; }
 .gside { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 .gside h3 { margin: 0 0 4px; }
+img.page { display: block; width: 100%; height: auto; }
 </style>
 </head>
 <body>
@@ -673,7 +674,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 73, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 74, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1687,7 +1688,7 @@ setTimeout(function () {
           if (hit && hit.t) {   // shown at once from this device; Google is asked in the background whether the book has changed
             bigList.text = hit.t;
             listTextFromGoogle().then(function (t) {
-              if (listSig(t) === listSig(hit.t) && t.cards.length === hit.t.cards.length) return;
+              if (listSig(t) === listSig(hit.t) && t.cards.length === hit.t.cards.length && !!t.boxes === !!hit.t.boxes) return;
               bigList.text = t; bigList.pdf = null; keepListText(t);
               if (sheet && sheet.type === "list" && !sheet.id) showList(t);
             }, function () {});
@@ -1729,6 +1730,7 @@ setTimeout(function () {
         var hits = r.hits || [];
         info.textContent = hits.length ? (r.names ? r.names + " with that name" : "Nobody has that name; " + r.others + " have it in their other details") + (hits.length < (r.names || r.others) ? ". Showing the first " + hits.length + "." : ".") : "Nobody in the list matches that.";
         hits.forEach(function (c) {
+          c.boxes = !!r.boxes;
           var rest = c.t.indexOf(c.n) === 0 ? c.t.slice(c.n.length) : c.t;
           out.append(el("button", { type: "button", class: "row", onclick: function () { showQuickCard(c); } },
             el("div", { class: "rb" }, el("div", { class: "nm", text: c.n }), el("div", { class: "sub", text: rest.trim().slice(0, 110) + " …" }))));
@@ -1752,6 +1754,10 @@ setTimeout(function () {
         else toast("The book is still coming onto this device. Try again in a moment.");
       } })),
       el("p", { class: "qcard", text: c.t }));
+    if (c.boxes) boxImage(c.i).then(function (src) {
+      if (!sheet || sheet.id !== "q" + c.i) return;
+      var words = body.querySelector(".qcard"); body.insertBefore(el("img", { class: "page", src: src, alt: c.n }), words); words.hidden = true;
+    }, function () {});
   }
 
   /* The button that takes a PDF from this device, reads its words for searching, and stores both. */
@@ -1846,7 +1852,12 @@ setTimeout(function () {
     var total = t.n || 0, cards = t.cards;
     var q = el("input", { type: "search", id: "listQ", placeholder: "Search the list: a name, a city, a yeshiva", "aria-label": "Search the list", value: bigList.q });
     var info = el("p", { class: "msg" }), out = el("div", { class: "list" });
-    body.append(el("div", { class: "tools" }, q), info, out, el("div", { class: "acts" }, listPicker("Replace the list")));
+    var prep = el("button", { type: "button", class: "btn", text: "Make the boxes open quickly", hidden: !!t.boxes || !LIVE, onclick: function () {
+      prep.disabled = true; info.textContent = "Preparing the boxes. This is done once and takes several minutes; keep this page open.";
+      makeBoxes(t, function (s) { if ($("listQ") === q) info.textContent = s; }).then(function (fresh) { toast("The boxes are ready"); if (sheet && sheet.type === "list" && !sheet.id) showList(fresh); },
+        function (e) { prep.disabled = false; if (e && e.error === "signin") oops(e); else info.textContent = "The boxes could not be prepared. Check your connection and try again. (Reason: " + String(e && (e.error || e.message) || "unknown") + ")"; });
+    } });
+    body.append(el("div", { class: "tools" }, q), info, out, el("div", { class: "acts" }, listPicker("Replace the list"), prep));
     var run = function () {
       var text = q.value.trim().toLowerCase(), words = text.split(/\s+/).filter(Boolean);
       bigList.q = q.value; out.textContent = "";
@@ -1890,13 +1901,60 @@ setTimeout(function () {
       cut.getContext("2d").drawImage(full, x0, y0, w, h, 0, 0, w, h);
       msg.remove(); body.insertBefore(cut, nav);
     };
+    var fromBook = function () {
     if (bigList.shot && bigList.shot.p === c.p) { paint(bigList.shot.canvas); return; }
     listPdf(t).then(function (pdf) { return pdf.getPage(c.p); }).then(function (page) {
       var vp = page.getViewport({ scale: 4 }), full = document.createElement("canvas");   // drawn large so the cut-out box is as sharp as the book
       full.width = Math.ceil(vp.width); full.height = Math.ceil(vp.height);
       return page.render({ canvasContext: full.getContext("2d"), viewport: vp }).promise.then(function () { bigList.shot = { p: c.p, canvas: full }; paint(full); });
     }).catch(function (e) { if (e && e.error === "signin") oops(e); else msg.textContent = "That person could not be shown. Check your connection and try again."; });
+    };
+    if (!t.boxes) { fromBook(); return; }
+    msg.textContent = "Loading…";
+    boxImage(i).then(function (src) {
+      if (!sheet || sheet.id !== "c" + i) return;
+      msg.remove(); body.insertBefore(el("img", { class: "page", src: src, alt: c.n }), nav);
+    }, function (e) { if (e && e.error === "signin") oops(e); else fromBook(); });
   }
+  /* Each person's box is also kept as its own small picture, so showing one person does not need the whole book. */
+  function boxImage(i) {
+    bigList.box = bigList.box || {};
+    if (bigList.box[i]) return Promise.resolve(bigList.box[i]);
+    return send({ action: "getList", token: PASS, part: "b" + i }).then(function (r) { bigList.box[i] = "data:image/jpeg;base64," + r.data; return bigList.box[i]; });
+  }
+  /* Done once for each List, on a computer: every box is cut out of the book and stored on its own. */
+  async function makeBoxes(t, say) {
+    var pdf = await listPdf(t);
+    await send({ action: "clearBoxes", token: PASS });
+    var batch = [], size = 0;
+    var flush = async function () { if (!batch.length) return; var items = batch; batch = []; size = 0; await sendWrite({ action: "saveBoxes", token: PASS, items: items }); };
+    for (var p = 1; p <= pdf.numPages; p++) {
+      var idx = []; t.cards.forEach(function (c, i) { if (c.p === p) idx.push(i); });
+      if (idx.length) {
+        var page = await pdf.getPage(p), base = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: 1480 / base.width }), full = document.createElement("canvas");
+        full.width = Math.ceil(vp.width); full.height = Math.ceil(vp.height);
+        var ctx = full.getContext("2d"); ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, full.width, full.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        for (var k = 0; k < idx.length; k++) {
+          var c = t.cards[idx[k]];
+          var x0 = Math.round(full.width * (c.c ? 0.5 : 0.015)), w = Math.round(full.width * 0.485), y0 = Math.round(full.height * c.a), h = Math.max(10, Math.round(full.height * (c.b - c.a)));
+          var cut = document.createElement("canvas"); cut.width = w; cut.height = h;
+          cut.getContext("2d").drawImage(full, x0, y0, w, h, 0, 0, w, h);
+          var q = 0.7, d = cut.toDataURL("image/jpeg", q).split(",")[1];
+          while (d.length > 170000 && q > 0.3) { q -= 0.15; d = cut.toDataURL("image/jpeg", q).split(",")[1]; }
+          batch.push({ id: "b" + idx[k], data: d }); size += d.length;
+          if (batch.length >= 20 || size > 900000) await flush();
+        }
+      }
+      if (say) say("Preparing the boxes: page " + p + " of " + pdf.numPages + "…");
+    }
+    await flush();
+    var fresh = Object.assign({}, t, { boxes: true });
+    await send({ action: "saveList", token: PASS, part: "text", mime: "text/plain", data: btoa(unescape(encodeURIComponent(JSON.stringify(fresh)))) });
+    bigList.text = fresh; bigList.box = {}; keepListText(fresh);
+    return fresh;
+  }
+
   function showListPage(t, n) {
     sheet = { type: "list", id: n }; $("sheetTitle").textContent = "List: page " + n + " of " + (t.n || (t.pages || []).length);
     var body = $("sheetBody"); body.textContent = ""; $("sheet").scrollTop = 0;
