@@ -182,6 +182,14 @@ dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: tex
 .topin span { color: #C9B487; }
 .topin h1 .mark { width: 1.25em; height: auto; flex: none; }
 @media (prefers-reduced-motion: reduce) { .splash { transition: none; } }
+/* Settings rows: one line each, opened by a tap. */
+.card.set, .sheet .card.set, #sheetBody .card.set { padding: 0; margin: 0 0 6px; }
+.set > summary { padding: 9px 12px; font-weight: 600; font-size: .9rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.set > summary::-webkit-details-marker { display: none; }
+.set > summary::after { content: "\203A"; font-size: 1.2rem; line-height: 1; color: var(--muted); transition: transform .15s ease; }
+.set[open] > summary::after { transform: rotate(90deg); }
+#sheetBody .card.set[open] { padding-bottom: 10px; }
+.set > :not(summary) { margin-left: 12px; margin-right: 12px; font-size: .9rem; }
 /* Phone: everything a little smaller, the top on one line, and each row of options on one line (the long Group row slides sideways). */
 @media (max-width: 520px) {
   html { font-size: 93.75%; }
@@ -393,14 +401,34 @@ setTimeout(function () {
     });
   }
   /* Group tags: a person can carry several; pressing tags in the filter shows anyone carrying at least one of them. */
-  var GROUPS = ["Kesher", "Kesher Boys", "Raintree", "Hope", "Shidduch Circle Working", "Shidduch Circle Learning"], groupSel = [];
+  /* Each account keeps its own list of groups (Settings). An account that has not set one up yet gets the first
+     list the app had, but only if its people already carry group tags; a new account starts with none. */
+  var FIRST_GROUPS = ["Kesher", "Kesher Boys", "Raintree", "Hope", "Shidduch Circle Working", "Shidduch Circle Learning"], GROUPS = [], groupSel = [];
+  function cleanGroups(list) {
+    var out = [];
+    (list || []).forEach(function (v) {
+      v = String(v || "").replace(/,/g, " ").replace(/\s+/g, " ").trim().slice(0, 40);
+      if (v && out.indexOf(v) < 0 && out.length < 20) out.push(v);
+    });
+    return out;
+  }
+  function syncGroups() {
+    if (Array.isArray(prefs.groups)) GROUPS = cleanGroups(prefs.groups);
+    else {
+      var used = [];
+      singles.forEach(function (s) { String(s.groups || "").split(",").forEach(function (v) { if (v && used.indexOf(v) < 0) used.push(v); }); });
+      GROUPS = used.length ? cleanGroups(FIRST_GROUPS.concat(used.filter(function (v) { return v !== "Working"; }))) : [];
+    }
+    groupSel = groupSel.filter(function (v) { return GROUPS.indexOf(v) >= 0; });
+    renderGroupFilter();
+  }
   function groupsOf(s) { return String((s && s.groups) || "").split(",").filter(function (v) { return GROUPS.indexOf(v) >= 0; }); }
   function toggleGroup(list, v) {
     var out = list.indexOf(v) >= 0 ? list.filter(function (x) { return x !== v; }) : list.concat([v]);
     return GROUPS.filter(function (x) { return out.indexOf(x) >= 0; });
   }
   function renderGroupFilter() {
-    var box = $("groupFilter"); box.textContent = "";
+    var box = $("groupFilter"); box.textContent = ""; box.hidden = !GROUPS.length;
     box.append(el("span", { class: "lbl", text: "Group" }));
     var chip = function (value, label) {
       var on = value === "" ? !groupSel.length : groupSel.indexOf(value) >= 0;
@@ -427,7 +455,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 47, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 49, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -623,7 +651,7 @@ setTimeout(function () {
   function loadAll(quiet, boot) {   // boot: the people Google sent along with the page, when it did
     if (!quiet) note("Loading from your Google Sheet…");
     return (boot ? Promise.resolve(boot) : call("load")).then(function (r) {
-      singles = r.data.singles || []; matches = r.data.matches || []; loaded = true; lastLoad = Date.now(); ME = r.email || ME; APP_URL = r.appUrl || APP_URL; checkBuild(r.build); if (r.settings) usePrefs(r.settings); hideSplash();
+      singles = r.data.singles || []; matches = r.data.matches || []; loaded = true; lastLoad = Date.now(); ME = r.email || ME; APP_URL = r.appUrl || APP_URL; checkBuild(r.build); if (r.settings) usePrefs(r.settings); syncGroups(); hideSplash();
       note(LIVE ? "" : "Preview mode: this copy is not connected to Google, so nothing you enter is saved."); render();
       if (LIVE && !REMOTE && URLKEY === PASS && r.keyAge != null && r.keyAge < 600000) note("You are signed in. Do this once on this device: tap the Share button, choose Add to Home Screen, and from now on open The Match from that new icon. It will not ask you to sign in again. To give the app to someone else, use Account and send the plain link, never this page.");
 
@@ -722,6 +750,7 @@ setTimeout(function () {
   function signOut(action) {
     call(action).catch(function () {}).then(function () {
       PASS = ""; ME = ""; try { localStorage.removeItem(KEEP); } catch (e) {}
+      delete prefs.groups; GROUPS = []; groupSel = [];
       singles = []; matches = []; photos = {}; resumeCache = {}; ideas = null; loaded = false;
       closeSheet(); render(); note(""); showGate("in", "You are signed out.");
     });
@@ -1039,7 +1068,7 @@ setTimeout(function () {
         work(call("saveSingle", { record: u })).then(function () { put(singles, u); render(); }).catch(function () { render(); });
       } }));
     });
-    body.append(el("h3", { text: "Group" }), el("p", { class: "msg", text: "Press one or more. Press again to take one off." }), gTags);
+    body.append(el("h3", { text: "Group" }), el("p", { class: "msg", text: GROUPS.length ? "Press one or more. Press again to take one off." : "You have no groups yet. Add your own under Settings (the round button at the top)." }), gTags);
     /* Single or Engaged: tap to set it on this person; it saves right away. */
     var stBox = el("div", { class: "chips", role: "group", "aria-label": "Status" });
     QUICK.slice(1).forEach(function (q) {
@@ -1409,9 +1438,39 @@ setTimeout(function () {
   function usePrefs(saved) {
     if (!saved || typeof saved !== "object") return;
     ["night", "size", "start"].forEach(function (k) { if (saved[k] !== undefined) prefs[k] = saved[k]; });
+    if (Array.isArray(saved.groups)) prefs.groups = saved.groups; else delete prefs.groups;
     applyPrefs(); render();
   }
   function setPref(k, v) { prefs[k] = v; applyPrefs(); call("saveSettings", { settings: prefs }); if (sheet && sheet.type === "settings") openSettings(); }
+  function setGroups(list) { prefs.groups = cleanGroups(list); syncGroups(); call("saveSettings", { settings: prefs }); render(); if (sheet && sheet.type === "settings") openSettings(); }
+  /* Settings is a short list of one-line rows; tapping a row opens it. A row stays open while you change things in it. */
+  var openSet = {};
+  function sect(title) {
+    var d = el.apply(null, ["details", { class: "card set" }, el("summary", { text: title })].concat(Array.prototype.slice.call(arguments, 1)));
+    d.open = !!openSet[title];
+    d.addEventListener("toggle", function () { openSet[title] = d.open; });
+    return d;
+  }
+  function groupsCard() {
+    var name = el("input", { type: "text", maxlength: "40", placeholder: "Name of a new group", "aria-label": "Name of a new group" });
+    var add = function () {
+      var v = cleanGroups([name.value])[0];
+      if (!v) { toast("Type the name of the group first."); return; }
+      if (GROUPS.indexOf(v) >= 0) { toast("You already have that group."); return; }
+      if (GROUPS.length >= 20) { toast("You can have up to 20 groups."); return; }
+      setGroups(GROUPS.concat([v]));
+    };
+    name.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } });
+    var rows = GROUPS.map(function (v) {
+      return el("div", { class: "acts", style: "justify-content:space-between;align-items:center;margin-top:6px" },
+        el("span", { text: v }),
+        el("button", { type: "button", class: "btn", text: "Remove", "aria-label": "Remove the group " + v, onclick: function () { setGroups(GROUPS.filter(function (x) { return x !== v; })); toast("Removed " + v); } }));
+    });
+    return sect("Groups",
+      el("p", { class: "msg", text: "These are the Group buttons on your list and on each person. They are yours only: someone you give the app to makes their own." }),
+      rows.length ? el("div", {}, rows) : el("p", { class: "msg", text: "You have no groups yet." }),
+      el("div", { class: "acts", style: "margin-top:10px" }, name, el("button", { type: "button", class: "btn primary", text: "Add group", onclick: add })));
+  }
   function openSettings() {
     openSheet("Settings", "settings", null);
     var pick = function (k, opts) {
@@ -1421,23 +1480,24 @@ setTimeout(function () {
     };
     var linkBox = el("p", { class: "msg", style: "user-select:text;overflow-wrap:anywhere" });
     $("sheetBody").append(
-      el("div", { class: "card" }, el("h3", { text: "Look" }),
+      sect("Look",
         el("p", { class: "msg", text: "Night look uses dark colors for the evening. The app never changes this by itself." }), pick("night", [[false, "Day"], [true, "Night"]]),
         el("p", { class: "msg", text: "Size of the wording" }), pick("size", [["s", "Small"], ["", "Regular"], ["l", "Larger"], ["xl", "Largest"]])),
-      el("div", { class: "card" }, el("h3", { text: "When the app opens" }),
+      sect("When the app opens",
         el("p", { class: "msg", text: "Which side to show first." }), pick("start", [["m", "Boys"], ["f", "Girls"]])),
-      el("div", { class: "card" }, el("h3", { text: "Your list" }),
+      groupsCard(),
+      sect("Your list",
         el("p", { text: singles.length + (singles.length === 1 ? " person is" : " people are") + " saved: " + singles.filter(function (x) { return x.gender !== "f"; }).length + " boys and " + singles.filter(function (x) { return x.gender === "f"; }).length + " girls. " + singles.filter(function (x) { return (x.status || "available") === "available"; }).length + " are single." }),
         el("p", { class: "msg", text: "Get the latest from your Google Sheet, for example after adding people on another device. The round arrow at the top does the same." }),
         el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Refresh", onclick: function () { closeSheet(); $("refresh").click(); } }))),
-      el("div", { class: "card" }, el("h3", { text: "Give the app to someone" }),
+      sect("Give the app to someone",
         el("p", { class: "msg", text: "Send them this link. They make their own login and see only their own list, never yours. Their settings are their own too." }),
         el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Copy the link", onclick: function () {
           var link = shareUrl() || "", shown = function () { linkBox.textContent = link; };
           if (!link) { toast("The link is not ready yet. Tap Refresh and try again."); return; }
           try { navigator.clipboard.writeText(link).then(function () { toast("Link copied"); }, shown); } catch (e) { shown(); }
         } })), linkBox),
-      el("div", { class: "card" }, el("h3", { text: "Account" }),
+      sect("Account",
         el("p", { class: "msg", text: "Signed in as " + (ME || "your account") + ". Your private link and signing out are under Account." }),
         el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Open account", onclick: function () { openAccount(); } }))));
   }
