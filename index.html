@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="The Match">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>The Match</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #EEF2F6; --surface: #FFFFFF; --ink: #0F1B2D; --muted: #526074; --line: #D2DAE4;
+  --accent: #2457C5; --accent-ink: #FFFFFF; --accent-soft: #DDE7FA;
+  --gold: #8A5F0E; --gold-soft: #F6ECD3;
+  --ok: #1F7A4D; --ok-soft: #DDF1E6;
+  --hold: #5B6781; --hold-soft: #E8EBF1;
+  --bad: #A6372F; --bad-soft: #F8E1DE;
+  --display: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1522; --surface: #18202F; --ink: #E8ECF4; --muted: #9AA6BD; --line: #2B3548;
+    --accent: #7FA8F0; --accent-ink: #0F1522; --accent-soft: #1F2C47;
+    --gold: #E0B659; --gold-soft: #3A3018;
+    --ok: #6CCB98; --ok-soft: #173326;
+    --hold: #9AA6BD; --hold-soft: #252E40;
+    --bad: #F0918A; --bad-soft: #3D1F1C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+    --bg: #0F1522; --surface: #18202F; --ink: #E8ECF4; --muted: #9AA6BD; --line: #2B3548;
+    --accent: #7FA8F0; --accent-ink: #0F1522; --accent-soft: #1F2C47;
+    --gold: #E0B659; --gold-soft: #3A3018;
+    --ok: #6CCB98; --ok-soft: #173326;
+    --hold: #9AA6BD; --hold-soft: #252E40;
+    --bad: #F0918A; --bad-soft: #3D1F1C;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 1rem; line-height: 1.45; }
+.wrap { max-width: 720px; margin-inline: auto; padding-left: 16px; padding-right: 16px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; }
+h1 { font-size: 1.45rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1.05rem; }
+p { margin: 0; }
+img { max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.top { position: sticky; top: 0; z-index: 9; background: var(--surface); border-bottom: 1px solid var(--line); }
+.topin { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.topin span { color: var(--muted); font-size: .9rem; }
+.topin div { display: flex; align-items: center; gap: 10px; }
+.note { margin-top: 12px; }
+.note > div { background: var(--gold-soft); color: var(--gold); border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+main { padding-block: 16px 110px; }
+section { display: flex; flex-direction: column; gap: 12px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tools > * { min-width: 0; }
+.tools input[type="search"] { flex: 1 1 100%; }
+input[type="text"], input[type="search"], input[type="number"], input[type="date"], input[type="password"], input[type="email"], select, textarea {
+  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 44px;
+}
+textarea { min-height: 84px; resize: vertical; }
+input[type="file"] { max-width: 100%; }
+.tools select { width: auto; flex: 1 1 140px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 10px 14px; min-height: 44px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px 16px; min-height: 44px; cursor: pointer; font-weight: 600; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn.small { min-height: 36px; padding: 6px 12px; font-size: .9rem; }
+.topin { padding-block: 18px 16px; }
+.topin h1 { font-size: 2rem; letter-spacing: -.02em; line-height: 1.1; }
+.topin div { gap: 12px; }
+#sync:empty { display: none; }
+.btn.small.round { width: 36px; padding: 0; border-radius: 50%; font-size: 1.2rem; line-height: 1; }
+.topin div { flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.btn:disabled { opacity: .55; cursor: default; }
+#singlesList { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+#singlesList .day, #singlesList .empty { grid-column: 1 / -1; }
+.tile { display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; min-width: 0; }
+.tile .av { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 0; font-size: 2.4rem; }
+.tile .tb { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; min-width: 0; }
+.tile .nm { font-family: var(--display); font-weight: 700; font-size: 1rem; overflow-wrap: anywhere; }
+.tile .sub { color: var(--muted); font-size: .88rem; overflow-wrap: anywhere; }
+.day { margin-top: 10px; padding-bottom: 4px; border-bottom: 2px solid var(--line); font-size: 1.05rem; }
+.count { color: var(--muted); font-size: .9rem; }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips .lbl { color: var(--muted); font-size: .9rem; flex: 1 1 100%; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 8px 14px; min-height: 42px; cursor: pointer; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.import { background: var(--accent-soft); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.import strong { font-family: var(--display); font-size: 1.05rem; }
+.rb { flex: 1; min-width: 0; }
+.av { flex: none; width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: var(--hold-soft); }
+.av.ph { display: inline-flex; align-items: center; justify-content: center; color: var(--hold); font-weight: 700; font-family: var(--display); font-size: 1.1rem; }
+.av.lg { width: 132px; height: 132px; border-radius: 14px; }
+.av.ph.lg { font-size: 2.2rem; }
+.hero { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.hero .rb { display: flex; flex-direction: column; gap: 8px; }
+.photoedit { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.photoedit > div { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 180px; }
+.row { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.row .r1 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.row .nm { font-family: var(--display); font-weight: 700; font-size: 1.1rem; min-width: 0; overflow-wrap: anywhere; }
+.row .sub { color: var(--muted); font-size: .95rem; overflow-wrap: anywhere; }
+.row .why { margin-top: 6px; overflow-wrap: anywhere; }
+.row .concern { margin-top: 4px; color: var(--gold); overflow-wrap: anywhere; }
+.pill { display: inline-block; white-space: nowrap; border-radius: 999px; padding: 2px 10px; font-size: .8rem; font-weight: 700; background: var(--hold-soft); color: var(--hold); }
+.pill.available, .pill.suggested, .pill.yes { background: var(--ok-soft); color: var(--ok); }
+.pill.busy, .pill.dating, .pill.middle, .pill.checking { background: var(--accent-soft); color: var(--accent); }
+.pill.engaged, .pill.married { background: var(--gold-soft); color: var(--gold); }
+.pill.ended, .pill.closed { background: var(--bad-soft); color: var(--bad); }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 22px 16px; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.block { background: var(--gold-soft); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.block h3 { color: var(--gold); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.msg { color: var(--muted); }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; background: var(--surface); border-top: 1px solid var(--line); padding: 0 16px env(safe-area-inset-bottom, 0px); }
+.tabs div { max-width: 720px; margin-inline: auto; display: flex; }
+.tabs button { flex: 1; white-space: nowrap; border: 0; background: transparent; padding: 14px 4px; min-height: 56px; cursor: pointer; color: var(--muted); font-weight: 600; border-top: 3px solid transparent; }
+.tabs button[aria-current="page"] { color: var(--accent); border-top-color: var(--accent); }
+.tabs button { font-size: .92rem; white-space: nowrap; }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+.page { display: block; width: 100%; height: auto; background: #FFFFFF; border: 1px solid var(--line); border-radius: 6px; }
+.lightbox { position: fixed; inset: 0; z-index: 60; background: rgba(8, 12, 20, .93); display: flex; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; background: #FFFFFF; }
+.lightbox .btn { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; }
+.hero img.av { cursor: zoom-in; }
+.topin { flex-wrap: wrap; }
+#sync { min-width: 4.2em; }
+.badge { display: inline-block; min-width: 20px; margin-left: 6px; border-radius: 999px; background: var(--gold); color: var(--surface); font-size: .75rem; padding: 1px 6px; }
+.sheet, .gate { position: fixed; inset: 0; z-index: 20; background: var(--bg); overflow-y: auto; }
+.gate { z-index: 40; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.gate .card { width: 100%; max-width: 380px; gap: 14px; }
+.sheetbar { position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 1px solid var(--line); }
+.sheetbar .wrap { display: flex; align-items: center; gap: 12px; padding-block: 8px; }
+.sheetbar h2 { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+#sheetBody { padding-block: 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+form { display: flex; flex-direction: column; gap: 14px; }
+.fld { display: flex; flex-direction: column; gap: 4px; }
+.fld > span { font-weight: 600; font-size: .92rem; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pair > * { min-width: 0; }
+.chk { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.chk input { width: 22px; height: 22px; }
+.radios { display: flex; gap: 20px; }
+dl { margin: 0; display: grid; grid-template-columns: minmax(96px, 30%) 1fr; gap: 8px 12px; }
+dt { color: var(--muted); font-size: .92rem; }
+dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 50; background: var(--ink); color: var(--bg); border-radius: 8px; padding: 10px 16px; max-width: calc(100% - 32px); }
+#statusFilter { display: none; }   /* the Any status box does this job, so the extra row of status buttons is not shown */
+/* Phone: everything a little smaller, the top on one line, and each row of options on one line (the long Group row slides sideways). */
+@media (max-width: 520px) {
+  html { font-size: 93.75%; }
+  input, select, textarea { font-size: 16px; }   /* an iPhone zooms the page when a box with smaller letters is tapped */
+  .topin { flex-wrap: nowrap; padding-block: 10px; gap: 8px; }
+  .topin h1 { font-size: 1.5rem; white-space: nowrap; }
+  .topin div { width: auto; flex-wrap: nowrap; gap: 6px; }
+  .btn.small { min-height: 32px; padding: 4px 9px; font-size: .82rem; }
+  .btn.small.round { width: 32px; font-size: 1.05rem; }
+  #sync { display: none; }
+  main { padding-block: 10px 100px; }
+  #p-singles { gap: 8px; }
+  #p-singles .tools { flex-wrap: nowrap; }
+  #p-singles > .tools:first-child input[type="search"] { order: 1; flex: 1 1 50%; min-width: 0; }
+  #p-singles > .tools:first-child #addSingle { order: 2; }
+  #p-singles > .tools:first-child .seg { order: 3; }
+  #p-singles > .tools:first-child select { order: 4; flex: 1 1 110px; width: auto; min-height: 40px; padding: 6px 8px; }
+  #p-singles .tools .seg { flex: 1 1 auto; }
+  #p-singles .tools .seg button { flex: 1; padding: 8px 6px; min-height: 40px; white-space: nowrap; }
+  #p-singles .tools .btn { flex: none; min-height: 40px; padding: 8px 12px; white-space: nowrap; }
+  #p-singles .tools input[type="search"] { min-height: 40px; padding: 8px 12px; }
+  #p-singles > .tools:first-child { flex-wrap: wrap; }
+  #p-singles .chips { position: relative; flex-wrap: nowrap; overflow-x: auto; gap: 5px; padding-top: 17px; scrollbar-width: none; }
+  #p-singles .chips::-webkit-scrollbar { display: none; }
+  #p-singles .chips .lbl { position: absolute; top: 0; left: 0; flex: none; font-size: .76rem; }
+  #p-singles .chip { flex: none; padding: 5px 8px; min-height: 32px; font-size: .84rem; white-space: nowrap; }
+  #p-singles #groupFilter { flex-wrap: wrap; overflow-x: visible; }   /* the group names are long, so they sit in two neat rows instead of sliding sideways */
+  #p-singles #groupFilter .chip { padding: 5px 7px; font-size: .82rem; }
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap topin"><h1>The Match</h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button></div></div></header>
+<div id="note" class="wrap note" hidden><div id="noteText"></div></div>
+<div id="update" class="wrap note" hidden><div>A newer version of The Match is ready. <a id="updateGo" target="_top" href="#">Tap here to update</a></div></div>
+
+<main class="wrap">
+  <section id="p-singles">
+    <div class="tools">
+      <input id="q" type="search" placeholder="Search name, city or yeshiva" aria-label="Search singles">
+      <div class="seg" role="group" aria-label="Show">
+        <button type="button" data-g="m" aria-pressed="true">Boys</button>
+        <button type="button" data-g="f" aria-pressed="false">Girls</button>
+      </div>
+      <select id="fStatus" aria-label="Status">
+        <option value="">Any status</option>
+        <option value="available">Single</option>
+        <option value="busy">Dating</option>
+        <option value="hold">On hold</option>
+        <option value="engaged">Engaged</option>
+        <option value="closed">Closed</option>
+      </select>
+      <button type="button" class="btn primary" id="addSingle">Add single</button>
+    </div>
+    <div class="chips" id="statusFilter" role="group" aria-label="Status"></div>
+    <div class="chips" id="learnFilter" role="group" aria-label="Years of learning"></div>
+    <div class="chips" id="groupFilter" role="group" aria-label="Group"></div>
+    <p id="singlesCount" class="count"></p>
+    <div id="singlesList" class="list"></div>
+    <div id="testTools" class="acts"></div>
+  </section>
+
+  <section id="p-matches" hidden>
+    <div id="due"></div>
+    <div class="tools">
+      <select id="fStage" aria-label="Stage">
+        <option value="open">In progress</option>
+        <option value="">All stages</option>
+        <option value="idea">Idea</option>
+        <option value="suggested">Suggested</option>
+        <option value="checking">Looking into it</option>
+        <option value="yes">Gave a yes</option>
+        <option value="dating">Dating</option>
+        <option value="middle">In the middle</option>
+        <option value="ended">Ended</option>
+        <option value="engaged">Engaged</option>
+      </select>
+      <button type="button" class="btn primary" id="addMatch">New shidduch</button>
+    </div>
+    <div id="matchList" class="list"></div>
+  </section>
+
+  <section id="p-mine" hidden>
+    <div class="tools"><input id="mineQ" type="search" placeholder="Search my ideas by name" aria-label="Search my ideas"><button type="button" class="btn primary" id="addIdea">Add an idea</button></div>
+    <div id="mineList" class="list"></div>
+  </section>
+
+  <section id="p-ideas" hidden>
+    <label class="fld"><span>Who needs a shidduch idea?</span><select id="ideaFor"></select></label>
+    <div class="acts"><button type="button" class="btn primary" id="ideaGo">Suggest matches</button></div>
+    <p id="ideaMsg" class="msg">Pick a person and tap Suggest matches. Suggestions compare age, hashkafa, background and location, and skip anyone already tried.</p>
+    <div id="ideaList" class="list"></div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Sections"><div>
+  <button type="button" data-tab="singles" aria-current="page">Singles</button>
+  <button type="button" data-tab="matches">Shidduchim<span id="dueBadge" class="badge" hidden></span></button>
+  <button type="button" data-tab="mine">My ideas</button>
+  <button type="button" data-tab="ideas">Suggest</button>
+</div></nav>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheetbar"><div class="wrap"><button type="button" class="btn" id="sheetBack">Back</button><h2 id="sheetTitle"></h2></div></div>
+  <div id="sheetBody" class="wrap"></div>
+</div>
+
+<div id="gate" class="gate" hidden>
+  <form class="card" id="gateForm" novalidate>
+    <h2 id="gateTitle">Sign in to The Match</h2>
+    <p id="gateMsg" class="msg"></p>
+    <label class="fld"><span>Email</span><input id="g-email" type="email" autocomplete="username" inputmode="email"></label>
+    <label class="fld"><span>Passcode</span><input id="g-pass" type="password" autocomplete="current-password"></label>
+    <label class="fld" id="g-pass2-wrap" hidden><span>Type the passcode again</span><input id="g-pass2" type="password" autocomplete="new-password"></label>
+    <label class="chk"><input type="checkbox" id="g-keep" checked> Keep me signed in on this device</label>
+    <button type="submit" class="btn primary" id="gateGo">Sign in</button>
+    <button type="button" class="btn" id="gateSwap">Create a new account</button>
+  </form>
+</div>
+<div id="lightbox" class="lightbox" hidden><img id="lightImg" alt="Picture"><button type="button" class="btn" id="lightClose">Close</button></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script type="application/json" id="boot">__BOOT__</script>
+<script>
+(function () {
+  "use strict";
+  /* Night look is a choice: the Night button turns it on or off and this device remembers it. The app never goes dark by itself. */
+  function setNight(on) {
+    document.documentElement.setAttribute("data-theme", on ? "dark" : "light");
+    try { localStorage.setItem("tm-night", on ? "1" : ""); } catch (e) {}
+    var b = document.getElementById("night"); if (b) { b.textContent = on ? "Day" : "Night"; b.setAttribute("aria-pressed", on ? "true" : "false"); }
+  }
+  var nightOn = false; try { nightOn = localStorage.getItem("tm-night") === "1"; } catch (e) {}
+  setNight(nightOn);
+  document.getElementById("night").addEventListener("click", function () { nightOn = !nightOn; setNight(nightOn); });
+
+  var STATUS = { available: "Single", busy: "Dating", hold: "On hold", engaged: "Engaged", married: "Married", closed: "Closed" };
+  var STAGE = { idea: "Idea", suggested: "Suggested", checking: "Looking into it", yes: "Gave a yes", dating: "Dating", middle: "In the middle", ended: "Ended", engaged: "Engaged" };
+  var OPEN = ["idea", "suggested", "checking", "yes", "dating", "middle"];
+  var MARITAL = { single: "Never married", divorced: "Divorced", widowed: "Widowed" };
+  var FIELDS = [
+    { k: "name", label: "Full name", type: "text" },
+    { k: "gender", label: "This is a", type: "gender" },
+    { k: "metDate", label: "Date I met them", type: "date" },
+    { k: "dob", label: "Date of birth", type: "date", pair: 1 },
+    { k: "age", label: "Age (if no birth date)", type: "number", pair: 2 },
+    { k: "city", label: "Lives in", type: "text" },
+    { k: "status", label: "Status", type: "select", opts: STATUS, pair: 1 },
+    { k: "marital", label: "Marital history", type: "select", opts: MARITAL, pair: 2 },
+    { k: "kohen", label: "Kohen", type: "check" },
+    { k: "height", label: "Height", type: "text", ph: "5'8\"" },
+    { k: "hashkafa", label: "Hashkafa", type: "text", ph: "Yeshivish, Modern Orthodox, Chassidish, Heimish" },
+    { k: "background", label: "Background", type: "text", ph: "Ashkenazi, Sephardi, baal teshuva" },
+    { k: "family", label: "Family", type: "area", ph: "Parents, siblings, shul, what the home is like" },
+    { k: "education", label: "Yeshiva, seminary, schools", type: "area" },
+    { k: "occupation", label: "Learning or working", type: "text" },
+    { k: "lookingFor", label: "Looking for", type: "area" },
+    { k: "ageMin", label: "Youngest age to suggest", type: "number", pair: 1 },
+    { k: "ageMax", label: "Oldest age to suggest", type: "number", pair: 2 },
+    { k: "references", label: "References", type: "area", ph: "Names and phone numbers" },
+    { k: "phone", label: "Phone or contact", type: "text" },
+    { k: "notes", label: "My private notes", type: "area" }
+  ];
+
+  var LEARN = ["working", "1-3", "3-5", "5-7", "7-10", "10+"], learnSel = [];   // learnSel: tags pressed in the filter; empty means All
+  function learnLabel(v) { return v === "working" ? "Working" : v === "10+" ? "10+" : String(v).replace("-", " to "); }
+  /* A person can carry more than one range ("1-3,3-5"); learnOf gives them as a list. */
+  function learnOf(s) {   // "Working" used to be a group tag; anyone tagged that way counts as working here
+    var have = String((s && s.learnYears) || "").split(","), wasGroup = String((s && s.groups) || "").split(",").indexOf("Working") >= 0;
+    return LEARN.filter(function (v) { return have.indexOf(v) >= 0 || (v === "working" && wasGroup); });
+  }
+  /* What a card says: "Working", "Learning 1 to 3 yrs", or both. */
+  function tileLearn(s) {
+    var all = learnOf(s), yrs = all.filter(function (v) { return v !== "working"; }).map(learnLabel);
+    return [all.indexOf("working") >= 0 ? "Working" : "", yrs.length ? "Learning " + yrs.join(", ") + " yrs" : ""].filter(Boolean).join(" · ");
+  }
+  function learnText(s) { return learnOf(s).map(learnLabel).join(", "); }
+  function toggleLearn(list, v) {
+    var out = list.indexOf(v) >= 0 ? list.filter(function (x) { return x !== v; }) : list.concat([v]);
+    return LEARN.filter(function (x) { return out.indexOf(x) >= 0; });
+  }
+  function learnChips(current, onPick) {
+    return LEARN.map(function (v) {
+      return el("button", { type: "button", class: "chip", "aria-pressed": current.indexOf(v) >= 0 ? "true" : "false", text: learnLabel(v), onclick: function () { onPick(v); } });
+    });
+  }
+  var QUICK = [["", "All"], ["available", "Single"], ["engaged", "Engaged"]];
+  function renderStatusFilter() {
+    var box = $("statusFilter"), cur = $("fStatus").value; box.textContent = "";
+    box.append(el("span", { class: "lbl", text: "Status" }));
+    QUICK.forEach(function (q) {
+      box.append(el("button", { type: "button", class: "chip", "aria-pressed": cur === q[0] ? "true" : "false", text: q[1],
+        onclick: function () { $("fStatus").value = q[0]; renderStatusFilter(); renderSingles(); } }));
+    });
+  }
+  /* Group tags: a person can carry several; pressing tags in the filter shows anyone carrying at least one of them. */
+  var GROUPS = ["Kesher", "Kesher Boys", "Raintree", "Hope", "Shidduch Circle Working", "Shidduch Circle Learning"], groupSel = [];
+  function groupsOf(s) { return String((s && s.groups) || "").split(",").filter(function (v) { return GROUPS.indexOf(v) >= 0; }); }
+  function toggleGroup(list, v) {
+    var out = list.indexOf(v) >= 0 ? list.filter(function (x) { return x !== v; }) : list.concat([v]);
+    return GROUPS.filter(function (x) { return out.indexOf(x) >= 0; });
+  }
+  function renderGroupFilter() {
+    var box = $("groupFilter"); box.textContent = "";
+    box.append(el("span", { class: "lbl", text: "Group" }));
+    var chip = function (value, label) {
+      var on = value === "" ? !groupSel.length : groupSel.indexOf(value) >= 0;
+      box.append(el("button", { type: "button", class: "chip", "aria-pressed": on ? "true" : "false", text: label, onclick: function () {
+        groupSel = value === "" ? [] : toggleGroup(groupSel, value);
+        renderGroupFilter(); renderSingles();
+      } }));
+    };
+    chip("", "All");
+    GROUPS.forEach(function (v) { chip(v, v); });
+  }
+  function renderLearnFilter() {
+    var box = $("learnFilter"); box.textContent = "";
+    box.append(el("span", { class: "lbl", text: "Years of learning" }));
+    var chip = function (value, label) {
+      var on = value === "" ? !learnSel.length : learnSel.indexOf(value) >= 0;
+      box.append(el("button", { type: "button", class: "chip", "aria-pressed": on ? "true" : "false", text: label, onclick: function () {
+        if (value === "") learnSel = [];
+        else if (on) learnSel = learnSel.filter(function (x) { return x !== value; });
+        else learnSel.push(value);
+        renderLearnFilter(); renderSingles();
+      } }));
+    };
+    chip("", "All");
+    LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
+  }
+  var BUILD = 43, newer = false;   // the copy this device is showing; Google fills in the number
+  var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
+  var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
+  var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
+  var singles = [], matches = [], photos = {};
+  var loaded = false, lastLoad = 0, busy = false;
+  var gFilter = "m", sheet = null, ideas = null, gateMode = "enter";
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, props) {
+    var n = document.createElement(tag), k, i;
+    if (props) for (k in props) {
+      var v = props[k];
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v;
+      else if (k === "text") n.textContent = v;
+      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), v);
+      else if (k === "value") n.value = v;
+      else if (k === "checked") n.checked = true;
+      else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null || c === false) continue;
+      if (Array.isArray(c)) c.forEach(function (x) { if (x != null && x !== false) n.append(x); });
+      else n.append(c);
+    }
+    return n;
+  }
+  var toastTimer;
+  function toast(t, stay) { var x = $("toast"); x.textContent = t; x.hidden = false; clearTimeout(toastTimer); if (!stay) toastTimer = setTimeout(function () { x.hidden = true; }, 3200); }
+  function note(t) { $("note").hidden = !t; $("noteText").textContent = t || ""; }
+  /* When a newer copy of the app has been published, this device moves to it by itself (or on the next tap, if the browser wants a tap). */
+  function freshUrl() { return APP_URL ? APP_URL + (/^[a-f0-9]{64}$/.test(PASS) ? "?k=" + PASS : "") : ""; }
+  function canLeave() { return !pending && !(sheet && sheet.type !== "detail"); }   // never in the middle of a save or a form
+  function goFresh() { if (REMOTE) { location.reload(); return; } var u = freshUrl(); if (u) { try { window.top.location.href = u; } catch (e) {} } }
+  function checkBuild(b) {
+    if (!LIVE || !BUILD || !(Number(b) > BUILD) || newer || !freshUrl()) return;
+    newer = true; $("update").hidden = false; $("updateGo").href = freshUrl();
+    if (canLeave()) goFresh();
+  }
+  document.addEventListener("click", function () { if (newer && canLeave()) goFresh(); }, true);
+  function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function newId(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  /* The day a person was met: the date set on the profile, or else the day they were added. */
+  function dayOf(s) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(s.metDate || ""))) return s.metDate;
+    var c = Number(s.createdAt); if (!c) return "";
+    var d = new Date(c);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function dayLabel(day) {
+    if (!day) return "No date";
+    var p = day.split("-").map(Number);
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  }
+  function byId(id) { for (var i = 0; i < singles.length; i++) if (singles[i].id === id) return singles[i]; return null; }
+  function put(list, rec) { for (var i = 0; i < list.length; i++) if (list[i].id === rec.id) { list[i] = rec; return; } list.push(rec); }
+  function ageOf(s) {
+    if (s.dob) {
+      var p = String(s.dob).split("-").map(Number), n = new Date();
+      if (p.length === 3 && p[0]) {
+        var a = n.getFullYear() - p[0];
+        if (n.getMonth() + 1 < p[1] || (n.getMonth() + 1 === p[1] && n.getDate() < p[2])) a--;
+        return a;
+      }
+    }
+    if (s.age) return Number(s.age) + (s.ageYear ? new Date().getFullYear() - Number(s.ageYear) : 0);
+    return null;
+  }
+  function subline(s) { var a = ageOf(s); return [s.gender === "f" ? "Girl" : "Boy", a != null ? a : null, s.city, s.hashkafa].filter(Boolean).join(" · "); }
+  function nameOf(id) { var s = byId(id); return s ? s.name : "(removed)"; }
+  function pill(kind, label) { return el("span", { class: "pill " + kind, text: label }); }
+  function fmtDate(d) { if (!d) return ""; var p = d.split("-"); return p.length === 3 ? Number(p[1]) + "/" + Number(p[2]) + "/" + p[0] : d; }
+  function isDue(m) { return m.followUp && m.followUp <= today() && OPEN.indexOf(m.stage) >= 0; }
+  function initials(s, cls) {
+    var parts = String(s.name || "").replace(/^TEST\s+/, "").trim().split(/\s+/);
+    var t = (parts[0] || "?").charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : "");
+    return el("span", { class: "av ph" + (cls ? " " + cls : ""), "aria-hidden": "true", text: t.toUpperCase() });
+  }
+  function avatar(s, cls, src) {
+    src = src || photos[s.id];
+    if (!src || String(src).indexOf("data:image/") !== 0) return initials(s, cls);
+    var img = el("img", { class: "av" + (cls ? " " + cls : ""), src: src, alt: "" });
+    img.addEventListener("error", function () { img.replaceWith(initials(s, cls)); });
+    return img;
+  }
+  /* The small copy shown on the cards: 380px on the long side so it stays sharp on a phone, then lower quality (or a smaller size) until it fits one cell of the sheet. */
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, c = document.createElement("canvas"), out = "", sizes = [380, 320, 260];
+        for (var si = 0; si < sizes.length; si++) {
+          var k = Math.min(1, sizes[si] / Math.max(w, h, 1)), q = 0.82;
+          c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          out = c.toDataURL("image/jpeg", q);
+          while (out.length > 48000 && q > 0.5) { q -= 0.08; out = c.toDataURL("image/jpeg", q); }
+          if (out.length <= 48000) break;
+        }
+        URL.revokeObjectURL(url);
+        out.length > 48000 ? rej() : res(out);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(); };
+      img.src = url;
+    });
+  }
+
+  /* ---------- talking to the Google Sheet ---------- */
+  var mock = {   // preview mode: used only when this file is opened outside Google, nothing is saved
+    api: function (r) {
+      var del = function (list, f) { for (var i = list.length - 1; i >= 0; i--) if (f(list[i])) list.splice(i, 1); };
+      var S = mock.s, M = mock.m, P = mock.p, copy = function (x) { return JSON.parse(JSON.stringify(x)); };
+      if (r.action === "saveSingle") put(S, copy(r.record));
+      if (r.action === "saveMatch") put(M, copy(r.record));
+      if (r.action === "deleteSingle") { del(S, function (x) { return x.id === r.id; }); del(M, function (x) { return x.m === r.id || x.f === r.id; }); delete P[r.id]; }
+      if (r.action === "deleteMatch") del(M, function (x) { return x.id === r.id; });
+      if (r.action === "savePhoto") P[r.id] = r.data;
+      if (r.action === "deletePhoto") delete P[r.id];
+      if (r.action === "readResume") return { ok: true, text: 'BS"D\nShidduch Resume\nRivka Leah Stern\nDate of Birth: May 9, 2004\nHeight: 5\'4"\nAddress: 14 Forest Ave, Lakewood, NJ 08701\nPhone: 732-555-0142\nFather: Rabbi Dovid Stern - learns in kollel, gives a shiur\nMother: Mrs. Miriam Stern (nee Katz) - nurse\nSiblings:\nShira (24) married to Yehuda Gross, Lakewood\nMoshe (19) learning in Eretz Yisroel\nEducation\nElementary: Bais Yaakov of Lakewood\nHigh School: Bnos Bais Yaakov\nSeminary: BJJ, Yerushalayim\nCurrently: Preschool morah\nShe is warm and capable and loves children.\nLooking for: A serious ben Torah who plans to learn long term.\nReferences\nMrs. Goldberg (teacher) 732-555-0199\nRabbi Klein: 732-555-0123' };
+      if (r.action === "saveList") { mock.l[r.part] = { mime: r.mime, data: r.data }; return { ok: true }; }
+      if (r.action === "getList") return mock.l[r.part] ? { ok: true, mime: mock.l[r.part].mime, data: mock.l[r.part].data } : { ok: false, error: "noresume" };
+      if (r.action === "deleteList") { delete mock.l[r.part]; return { ok: true }; }
+      if (r.action === "deleteResume") delete mock.r[r.id];
+      if (r.action === "saveResume") { mock.r[r.id] = { mime: r.mime, data: r.data }; }
+      if (r.action === "getResume") return mock.r[r.id] ? { ok: true, mime: mock.r[r.id].mime, data: mock.r[r.id].data } : { ok: false, error: "noresume" };
+      if (r.action === "bulk") { (r.singles || []).forEach(function (x) { put(S, copy(x)); }); Object.keys(r.photos || {}).forEach(function (k) { P[k] = r.photos[k]; }); Object.keys(r.resumes || {}).forEach(function (k) { mock.r[k] = { mime: "application/pdf", data: r.resumes[k] }; }); }
+      if (r.action === "removeTest") { del(S, function (x) { return x.id.indexOf("test-") === 0; }); del(M, function (x) { return x.m.indexOf("test-") === 0 || x.f.indexOf("test-") === 0; }); Object.keys(P).forEach(function (k) { if (k.indexOf("test-") === 0) delete P[k]; }); }
+      return { ok: true, token: "preview", email: "preview", appUrl: "", data: copy({ singles: S, matches: M }), photos: copy(P) };
+    }, s: [], m: [], p: {}, r: {}, l: {}
+  };
+  /* Talking to Google. Saves do not make you wait: the screen changes at once and the save is sent in the
+     background, one after another in order. Anything that reads from Google waits for the saves ahead of it. */
+  var WRITES = { saveSettings: 1, saveSingle: 1, saveMatch: 1, deleteSingle: 1, deleteMatch: 1, savePhoto: 1, deletePhoto: 1, saveResume: 1, deleteResume: 1 };
+  var chain = Promise.resolve(), pending = 0, everSaved = false;
+  function send(req) {
+    return new Promise(function (res, rej) {
+      if (!LIVE) { setTimeout(function () { var r = mock.api(req); r && r.ok ? res(r) : rej(r || { error: "failed" }); }, 120); return; }
+      if (REMOTE) {   // plain text on purpose: the browser then sends it straight away, with no permission round trip first
+        fetch(REMOTE, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(req), redirect: "follow" })
+          .then(function (r) { return r.json(); })
+          .then(function (r) { r && r.ok ? res(r) : rej(r || { error: "failed" }); }, function () { rej({ error: "network" }); });
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (r) { r && r.ok ? res(r) : rej(r || { error: "failed" }); })
+        .withFailureHandler(function () { rej({ error: "network" }); })
+        .api(req);
+    });
+  }
+  function sendWrite(req, tries) {
+    return send(req).catch(function (e) {
+      tries = tries || 0;
+      if (e && e.error === "network" && tries < 2) return new Promise(function (r) { setTimeout(r, 2500 * (tries + 1)); }).then(function () { return sendWrite(req, tries + 1); });
+      throw e;
+    });
+  }
+  function showSync() { $("sync").textContent = pending ? "Saving…" : everSaved ? "Saved" : ""; }
+  function call(action, extra) {
+    var req = Object.assign({ action: action, token: PASS }, extra || {});
+    if (!WRITES[action]) return chain.then(function () { return send(req); });
+    pending++; showSync();
+    chain = chain.then(function () { return sendWrite(req); }).then(function () { pending--; everSaved = true; showSync(); }, function (e) {
+      pending--; showSync();
+      if (e && e.error === "signin") { oops(e); return; }
+      note(e && (e.error === "photobig" || e.error === "resumebig") ? "That file was too large to keep, so it was not saved. Tap Refresh to see what is saved."
+        : "A change could not be saved. Check your connection, then tap Refresh to see what is saved.");
+    });
+    return Promise.resolve({ ok: true });
+  }
+  function oops(e) {
+    var c = e && e.error;
+    if (c === "signin") { PASS = ""; try { localStorage.removeItem(KEEP); } catch (x) {} loaded = false; showGate("in", "Please sign in."); return; }
+    if (c === "photobig" || c === "badphoto") { toast("That picture could not be stored. Try a different one."); return; }
+    if (c === "resumetype" || c === "resumebig" || c === "resumeread") return;   // the resume box shows its own message
+    toast("Could not reach your Google Sheet. Check your connection and try again.");
+  }
+  function work(promise, btn) {
+    busy = true; if (btn) btn.disabled = true;
+    var slow = setTimeout(function () { toast("Working…", true); }, 600);   // only shown when something really has to wait
+    var done = function () { busy = false; clearTimeout(slow); $("toast").hidden = true; };
+    return promise.then(function (r) { done(); return r; }, function (e) { done(); if (btn) btn.disabled = false; oops(e); throw e; });
+  }
+  function loadAll(quiet, boot) {   // boot: the people Google sent along with the page, when it did
+    if (!quiet) note("Loading from your Google Sheet…");
+    return (boot ? Promise.resolve(boot) : call("load")).then(function (r) {
+      singles = r.data.singles || []; matches = r.data.matches || []; loaded = true; lastLoad = Date.now(); ME = r.email || ME; APP_URL = r.appUrl || APP_URL; checkBuild(r.build); if (r.settings) usePrefs(r.settings);
+      note(LIVE ? "" : "Preview mode: this copy is not connected to Google, so nothing you enter is saved."); render();
+      if (LIVE && !REMOTE && URLKEY === PASS && r.keyAge != null && r.keyAge < 600000) note("You are signed in. Do this once on this device: tap the Share button, choose Add to Home Screen, and from now on open The Match from that new icon. It will not ask you to sign in again. To give the app to someone else, use Account and send the plain link, never this page.");
+
+      return quiet && Object.keys(photos).length ? null : call("photos");   // pictures are fetched once, not on every background refresh
+    }).then(function (r) { if (r) { photos = r.photos || {}; render(); } }).catch(function (e) { note(""); oops(e); });
+  }
+
+  /* ---------- sign in, create an account, stay signed in ---------- */
+  function showGate(mode, msg) {
+    gateMode = mode === "new" ? "new" : "in";
+    $("gate").hidden = false; $("g-pass").value = ""; $("g-pass2").value = "";
+    $("g-pass2-wrap").hidden = gateMode !== "new";
+    $("gateTitle").textContent = gateMode === "new" ? "Create your account" : "Sign in to The Match";
+    $("gateGo").textContent = gateMode === "new" ? "Create account" : "Sign in";
+    $("gateSwap").textContent = gateMode === "new" ? "I already have an account" : "Create a new account";
+    $("gateMsg").textContent = msg || (gateMode === "new" ? "Use your email and choose a passcode of at least 6 characters. Your list is private to your account." : "Enter your email and passcode.");
+  }
+  $("gateSwap").addEventListener("click", function () { showGate(gateMode === "new" ? "in" : "new"); });
+  $("gateForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = $("g-email").value.trim(), p = $("g-pass").value, isNew = gateMode === "new";
+    if (!email || !p) { $("gateMsg").textContent = "Enter your email and passcode."; return; }
+    if (isNew && p.length < 6) { $("gateMsg").textContent = "Use at least 6 characters for the passcode."; return; }
+    if (isNew && p !== $("g-pass2").value) { $("gateMsg").textContent = "The two passcodes do not match."; return; }
+    $("gateGo").disabled = true; $("gateMsg").textContent = isNew ? "Creating your account…" : "Signing in…";
+    call(isNew ? "signup" : "login", { email: email, pass: p }).then(function (r) {
+      $("gateGo").disabled = false;
+      PASS = r.token; ME = r.email || email; APP_URL = r.appUrl || APP_URL;
+      var keep = $("g-keep").checked;
+      if (keep) { try { localStorage.setItem(KEEP, PASS); } catch (e2) {} }
+      $("gate").hidden = true; $("g-pass").value = ""; $("g-pass2").value = "";
+      if (keep && LIVE && APP_URL && !REMOTE) {
+        // Jump straight to this device's private page, so no extra button is needed. If the browser refuses, fall back to the Account page.
+        note("Signing you in on this device…");
+        try { window.top.location.href = APP_URL + "?k=" + PASS; } catch (e3) {}
+        return new Promise(function (res) { setTimeout(res, 3000); }).then(function () { return loadAll(); }).then(function () { if (loaded) openAccount(); });
+      }
+      return loadAll();
+
+    }).catch(function (err) {
+      $("gateGo").disabled = false;
+      var c = err && err.error;
+      $("gateMsg").textContent = c === "locked" ? "Too many wrong tries. Wait " + (err.minutes || 15) + " minutes and try again."
+        : c === "badlogin" ? "That email and passcode do not match an account."
+        : c === "exists" ? "There is already an account with that email. Use \"I already have an account\"."
+        : c === "bademail" ? "That does not look like an email address."
+        : c === "short" ? "Use at least 6 characters for the passcode."
+        : c === "full" ? "No more accounts can be created right now."
+        : "Could not reach Google. Check your connection and try again.";
+    });
+  });
+  function shareUrl() { return REMOTE ? location.origin + location.pathname : APP_URL; }   // the link to give to other people
+  function openAccount() {
+    openSheet("Account", "account", null);
+    var body = $("sheetBody");
+    body.append(el("p", { text: "Signed in as " + (ME || "your account") + ". Your list is private to this account." }));
+    if (LIVE && APP_URL && PASS && !REMOTE) {
+      body.append(el("div", { class: "card" },
+        el("h3", { text: "Stay signed in on this device" }),
+        el("p", { class: "msg", text: "Tap the button, then save the page that opens: on iPhone or iPad use Share, then Add to Home Screen. Opening it from there will not ask for your passcode." }),
+        el("p", { class: "concern", text: "That saved page is the key to your account on this device. Do not share it, text it or email it. To give someone the app, send them the plain link instead." }),
+        el("div", { class: "acts" }, el("a", { class: "btn primary", href: APP_URL + "?k=" + PASS, target: "_top", text: "Open my private link" }))));
+    }
+    if (shareUrl()) {
+      var plain = el("input", { type: "text", id: "plainLink", readonly: true, value: shareUrl(), "aria-label": "Plain link to share" });
+      body.append(el("div", { class: "card" },
+        el("h3", { text: "Send the app to someone else" }),
+        el("p", { class: "msg", text: "Send this plain link. It has no login in it; they create their own account and their own list." }),
+        plain,
+        el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Copy the plain link", onclick: function () {
+          var done = function () { toast("Copied"); }, pick = function () { plain.focus(); plain.select(); toast("Press and hold the link to copy it"); };
+          try { navigator.clipboard.writeText(shareUrl()).then(done, pick); } catch (e) { pick(); }
+        } }))));
+    }
+    body.append(el("div", { class: "acts" },
+      el("button", { type: "button", class: "btn", text: "Sign out", onclick: function () { signOut("logout"); } }),
+
+      el("button", { type: "button", class: "btn danger", text: "Sign out of every device", onclick: function () { signOut("logoutAll"); } })));
+    body.append(el("p", { class: "msg", text: "Sign out of every device cancels every saved private link for this account, for example if a phone is lost." }));
+  }
+  function signOut(action) {
+    call(action).catch(function () {}).then(function () {
+      PASS = ""; ME = ""; try { localStorage.removeItem(KEEP); } catch (e) {}
+      singles = []; matches = []; photos = {}; resumeCache = {}; ideas = null; loaded = false;
+      closeSheet(); render(); note(""); showGate("in", "You are signed out.");
+    });
+  }
+
+  /* ---------- rendering ---------- */
+  function render() {
+    renderSummary(); renderSingles(); renderMatches(); renderMine(); renderIdeaPicker(); renderIdeas();
+    if (sheet && sheet.type === "detail") openDetail(sheet.id);
+  }
+  function renderSummary() {
+    var avail = singles.filter(function (s) { return (s.status || "available") === "available"; }).length;
+    $("summary").textContent = singles.length ? avail + " single of " + singles.length : "";
+    document.querySelectorAll(".seg button").forEach(function (b) {   // how many men and how many women are saved
+      var c = singles.filter(function (s) { return s.gender === b.dataset.g; }).length;
+      b.textContent = (b.dataset.g === "m" ? "Boys" : "Girls") + " (" + c + ")";
+    });
+
+    var due = matches.filter(isDue).length, b = $("dueBadge");
+    b.hidden = !due; b.textContent = due;
+  }
+  var moreQ = "";   // the search for which "Also show city or yeshiva" was pressed
+  function renderSingles() {
+    var box = $("singlesList"), tools = $("testTools"); box.textContent = ""; tools.textContent = "";
+    if (!loaded) { $("singlesCount").textContent = ""; return; }
+    var hasTest = singles.some(function (s) { return s.id.indexOf("test-") === 0; });
+    if (hasTest) tools.append(el("button", { type: "button", class: "btn danger small", text: "Remove the 10 test people", onclick: function (e) {
+      work(call("removeTest"), e.currentTarget).then(function (r) { singles = r.data.singles; matches = r.data.matches; Object.keys(photos).forEach(function (k) { if (k.indexOf("test-") === 0) delete photos[k]; }); ideas = null; closeSheet(); render(); }).catch(function () {});
+    } }));
+    if (!singles.length) {
+      $("singlesCount").textContent = "";
+      box.append(el("div", { class: "empty" },
+        el("h3", { text: "No singles yet" }),
+        el("p", { text: "Each person you add gets a profile here: age, hashkafa, family, schools, what they are looking for and your notes." }),
+        el("div", { class: "acts" },
+          el("button", { type: "button", class: "btn primary", text: "Add your first single", onclick: function () { openSingleForm(null); } }),
+          el("button", { type: "button", class: "btn", text: "Load 10 test people", onclick: function (e) { seedTest(e.currentTarget); } }))));
+      return;
+    }
+    var q = $("q").value.trim().toLowerCase(), st = $("fStatus").value;
+    var rows = singles.filter(function (s) {
+      if (s.gender !== gFilter) return false;   // a search stays inside Men or Women, whichever is pressed
+      if (st && (s.status || "available") !== st) return false;
+      if (groupSel.length) { var gs = groupsOf(s); if (!groupSel.some(function (v) { return gs.indexOf(v) >= 0; })) return false; }
+      if (learnSel.length) {
+        var ly = learnOf(s);
+        if (!learnSel.some(function (v) { return ly.indexOf(v) >= 0; })) return false;   // anyone carrying at least one of the tags pressed
+      }
+      if (q && [s.name, s.city, s.education,   /* the search box looks at the name, city and yeshiva; not family or notes */
+        learnOf(s).join(" ") + " " + learnText(s)].join(" ").toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+    $("singlesCount").textContent = q ? rows.length + " found" : "Showing " + rows.length + " of " + singles.filter(function (s) { return s.gender === gFilter; }).length + (gFilter === "f" ? " girls" : " boys");
+    if (!rows.length) { box.append(el("div", { class: "empty" }, el("p", { text: "Nobody matches that search." }))); return; }
+    if (q) {   // name matches first; people who only match by city or yeshiva go under their own heading
+      var byName = function (s) { return String(s.name).toLowerCase().indexOf(q) >= 0; };
+      var named = rows.filter(byName), others = rows.filter(function (s) { return !byName(s); });
+      var showOthers = !named.length || moreQ === q;   // when a name matches, only names show until the button below is pressed
+      $("singlesCount").textContent = (showOthers ? rows.length : named.length) + " found among the " + (gFilter === "f" ? "girls" : "boys");
+      [["Name", named], ["City or yeshiva", showOthers ? others : []]].forEach(function (g) {
+        if (!g[1].length) return;
+        box.append(el("h3", { class: "day", text: g[0] }));
+        g[1].forEach(function (s) { box.append(singleTile(s, function () { openDetail(s.id); })); });
+      });
+      if (others.length && !showOthers) box.append(el("div", { class: "day", style: "border:0" },
+        el("button", { type: "button", class: "btn", text: "Also show " + others.length + " with that in their city or yeshiva", onclick: function () { moreQ = q; renderSingles(); } })));
+      return;
+    }
+    rows.sort(function (a, b) { var da = dayOf(a), dz = dayOf(b); return da === dz ? String(a.name).localeCompare(String(b.name)) : (da < dz ? 1 : -1); });
+    var lastDay = null;   // newest first; no date headings
+    rows.forEach(function (s) {
+      var day = dayOf(s);
+      box.append(singleTile(s, function () { openDetail(s.id); }));
+    });
+
+  }
+  /* One square card in the Singles grid: picture, then name, age and where they are from, and years of learning. */
+  function singleTile(s, onclick) {
+    var st = s.status || "available", a = ageOf(s), ly = learnText(s);
+    return el("button", { type: "button", class: "tile", onclick: onclick }, avatar(s, "pic"),
+      el("div", { class: "tb" },
+        el("div", { class: "nm", text: s.name }),
+        el("div", { class: "sub", text: [a != null ? a : null, s.city].filter(Boolean).join(" · ") }),
+        ly ? el("div", { class: "sub", text: tileLearn(s) }) : null,
+        st !== "available" ? pill(st, STATUS[st] || st) : null));
+  }
+  function singleRow(s, onclick, extra) {
+    var st = s.status || "available";
+    return el("button", { type: "button", class: "row", onclick: onclick }, avatar(s),
+      el("div", { class: "rb" },
+        el("div", { class: "r1" }, el("span", { class: "nm", text: s.name }), pill(st, STATUS[st] || st)),
+        el("div", { class: "sub", text: subline(s) }), extra));
+  }
+  /* What a shidduch shows on the list: "In the middle, 6" when the number of dates is set. */
+  function stageText(m) { return (STAGE[m.stage] || m.stage) + (m.stage === "middle" && m.dates ? ", " + m.dates : ""); }
+  function matchRow(m) {
+    var bits = [];
+    if (m.followUp && OPEN.indexOf(m.stage) >= 0) bits.push("Follow up " + fmtDate(m.followUp));
+    if (m.notes) bits.push(String(m.notes).split("\n")[0].slice(0, 90));
+    return el("button", { type: "button", class: "row", onclick: function () { openMatchForm(m.id); } },
+      el("div", { class: "rb" },
+        el("div", { class: "r1" }, el("span", { class: "nm", text: nameOf(m.m) + " & " + nameOf(m.f) }), pill(m.stage, stageText(m))),
+        bits.length ? el("div", { class: "sub", text: bits.join(" · ") }) : null));
+  }
+  function renderMatches() {
+    var box = $("matchList"), dueBox = $("due"); box.textContent = ""; dueBox.textContent = "";
+    if (!loaded) return;
+    var due = matches.filter(isDue).sort(function (a, b) { return a.followUp < b.followUp ? -1 : 1; });
+    if (due.length) dueBox.append(el("div", { class: "block" }, el("h3", { text: "Follow up now" }), due.map(matchRow)));
+    if (!matches.length) {
+      box.append(el("div", { class: "empty" }, el("h3", { text: "No shidduchim yet" }),
+        el("p", { text: "Every suggestion you make is tracked here, from first idea through dating, with a follow-up date and your notes." })));
+      return;
+    }
+    var f = $("fStage").value;
+    var rows = matches.filter(function (m) { return f === "" ? true : f === "open" ? OPEN.indexOf(m.stage) >= 0 : m.stage === f; })
+      .sort(function (a, b) { return (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0); });
+    if (!rows.length) { box.append(el("div", { class: "empty" }, el("p", { text: "Nothing at this stage." }))); return; }
+    rows.forEach(function (m) { box.append(matchRow(m)); });
+  }
+  function renderIdeaPicker() {
+    var sel = $("ideaFor"), cur = sel.value; sel.textContent = "";
+    var list = singles.filter(function (s) { var st = s.status || "available"; return st === "available" || st === "hold"; })
+      .sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+    if (!list.length) { sel.append(el("option", { value: "", text: "Add singles first" })); $("ideaGo").disabled = true; return; }
+    $("ideaGo").disabled = false;
+    list.forEach(function (s) { sel.append(el("option", { value: s.id, text: s.name + " (" + subline(s) + ")" })); });
+    if (cur && byId(cur)) sel.value = cur;
+  }
+  function renderIdeas() {
+    var box = $("ideaList"); box.textContent = "";
+    if (!ideas) return;
+    ideas.items.forEach(function (it) {
+      var s = byId(it.id); if (!s) return;
+      var saved = ideas.saved[it.id];
+      box.append(el("div", { class: "card" },
+        singleRow(s, function () { openDetail(s.id); },
+          [it.why ? el("div", { class: "why", text: it.why }) : null, it.concern ? el("div", { class: "concern", text: "Check: " + it.concern }) : null]),
+        el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: saved ? "Saved to Shidduchim" : "Save as an idea", disabled: saved,
+          onclick: function (e) { saveIdea(it, e.currentTarget); } }))));
+    });
+  }
+
+  /* ---------- my ideas: the ones I put in myself, and the ones I already redt ---------- */
+  function ideaCard(m) {
+    var him = byId(m.m), her = byId(m.f);
+    return el("div", { class: "card" },
+      el("button", { type: "button", class: "row", onclick: function () { openMatchForm(m.id); } },
+        him ? avatar(him) : null, her ? avatar(her) : null,
+        el("div", { class: "rb" },
+          el("div", { class: "r1" }, el("span", { class: "nm", text: nameOf(m.m) + " & " + nameOf(m.f) }), m.stage !== "idea" ? pill(m.stage, stageText(m)) : null),
+          m.notes ? el("div", { class: "sub", text: String(m.notes).slice(0, 160) }) : null,
+          m.stage === "ended" && m.endReason ? el("div", { class: "concern", text: "What was wrong: " + m.endReason }) : null)),
+      m.stage === "idea"
+        ? el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "I redt it", onclick: function (e) { var btn = e.currentTarget; var u = Object.assign({}, m, { stage: "suggested", redtAt: today(), updatedAt: String(Date.now()) }); work(call("saveMatch", { record: u }), btn).then(function () { put(matches, u); render(); }).catch(function () {}); } }))
+        : null);
+  }
+  function renderMine() {
+    var box = $("mineList"); box.textContent = "";
+    if (!loaded) return;
+    var mq = $("mineQ").value.trim().toLowerCase();
+    var hit = function (m) { return !mq || (nameOf(m.m) + " " + nameOf(m.f)).toLowerCase().indexOf(mq) >= 0; };
+    var groups = [["Everything I redt", false, function (m) { return m.redtAt || dayOf({ createdAt: m.createdAt }); }],
+                  ["Ideas I have not redt yet", true, function (m) { return dayOf({ createdAt: m.createdAt }); }]], any = false;
+    groups.forEach(function (g) {
+      var list = matches.filter(function (m) { return (m.stage === "idea") === g[1] && hit(m); })
+        .sort(function (a, b) { var da = g[2](a), dz = g[2](b); return da === dz ? (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0) : (da < dz ? 1 : -1); });
+      if (!list.length) return;
+      any = true;
+      box.append(el("h2", { text: g[0] }));
+      var last = null;
+      list.forEach(function (m) {
+        var day = g[2](m);
+        if (day !== last) { last = day; box.append(el("h3", { class: "day", text: dayLabel(day) })); }
+        box.append(ideaCard(m));
+      });
+    });
+    if (!any && mq) box.append(el("div", { class: "empty" }, el("p", { text: "No ideas match that search." })));
+    else if (!any) box.append(el("div", { class: "empty" }, el("h3", { text: "No ideas yet" }),
+      el("p", { text: "Tap Add an idea, choose him and her, and write what made you think of it. When you have redt it, tap I redt it and it moves up under Everything I redt, with the date." })));
+  }
+
+  /* Open the stored resume file. A window is opened at the tap itself (so the browser allows it) and filled once the file arrives. */
+  var resumeCache = {};
+  function openResume(s, btn, box, label) {
+    var w = null; try { w = window.open("", "_blank"); } catch (e) {}
+    var show = function (r) {
+      var bin = atob(r.data), arr = new Uint8Array(bin.length), i, done = false;
+      for (i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      var url = URL.createObjectURL(new Blob([arr], { type: r.mime }));
+      if (w) { try { w.location.href = url; done = true; } catch (e) {} }
+      btn.disabled = false; btn.textContent = label;
+      if (!done && !box.querySelector("a")) box.append(el("a", { class: "btn", href: url, target: "_blank", rel: "noopener", text: "Tap here if it did not open" }));
+    };
+    if (resumeCache[s.id]) { show(resumeCache[s.id]); return; }
+    btn.disabled = true; btn.textContent = "Loading the resume…";
+    call("getResume", { id: s.id }).then(function (r) { resumeCache[s.id] = r; show(r); }).catch(function (e) {
+      if (w) { try { w.close(); } catch (x) {} }
+      btn.disabled = false; btn.textContent = label;
+      if (e && e.error === "noresume") toast("No resume file is stored for this person."); else oops(e);
+    });
+  }
+
+  /* Show a stored resume inside the app: a PDF is drawn page by page, a photo is shown as it is. */
+  function viewResume(s, load) {
+    openSheet("Resume: " + s.name, "resume", s.id);
+    var body = $("sheetBody"), msg = el("p", { class: "msg", text: "Loading the resume…" });
+    body.append(msg);
+    load().then(function (r) {
+      body.insertBefore(shareBar([new File([r.bytes], fileBase(s) + " resume" + extOf(r.mime), { type: r.mime })]), msg);   // made before the PDF is drawn, which may use up the bytes
+      if (r.mime !== "application/pdf") {
+        msg.remove();
+        body.append(el("img", { class: "page", src: URL.createObjectURL(new Blob([r.bytes], { type: r.mime })), alt: "Resume" }));
+        return;
+      }
+      return loadPdf().then(function (lib) { return lib.getDocument({ data: r.bytes }).promise; }).then(async function (pdf) {
+        msg.remove();
+        for (var i = 1; i <= Math.min(pdf.numPages, 12); i++) {
+          if (!sheet || sheet.type !== "resume" || sheet.id !== s.id) return;
+          var page = await pdf.getPage(i), base = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: Math.min(3, 1400 / base.width) });
+          var c = el("canvas", { class: "page" });
+          c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+          body.append(c);
+          await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+        }
+      });
+    }).catch(function () { msg.textContent = "The resume could not be shown. Check your connection, go back and try again."; if (!msg.parentNode) body.append(msg); });
+  }
+
+  var PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/", pdfReady = null;
+  function addScript(src) {
+    return new Promise(function (res, rej) { var sc = document.createElement("script"); sc.src = src; sc.onload = res; sc.onerror = rej; document.head.append(sc); });
+  }
+  function loadPdf() {
+    if (!pdfReady) pdfReady = addScript(PDFJS + "pdf.min.js").then(function () { return addScript(PDFJS + "pdf.worker.min.js"); }).then(function () {
+      if (!window.pdfjsLib) throw { error: "pdf" };
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+      return window.pdfjsLib;
+    }, function () { pdfReady = null; throw { error: "pdf" }; });
+    return pdfReady;
+  }
+  function resumeBytes(id) {
+    var got = resumeCache[id] ? Promise.resolve(resumeCache[id]) : call("getResume", { id: id }).then(function (r) { resumeCache[id] = r; return r; });
+    return got.then(function (r) {
+      var bin = atob(r.data), arr = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return { bytes: arr, mime: r.mime };
+    });
+  }
+
+  /* Tap the picture on a profile to see the whole picture; tap again to close. */
+  function heroPic(s) {
+    var pic = avatar(s, "lg");
+    if (pic.tagName === "IMG") {
+      pic.setAttribute("role", "button"); pic.setAttribute("tabindex", "0"); pic.setAttribute("aria-label", "Show the whole picture");
+      var open = function () { viewPhoto(s, pic.src); };
+      pic.addEventListener("click", open);
+      pic.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+      resumeBytes(s.id + "_pic").then(function (r) {   // the profile shows the large, sharp copy as soon as it arrives
+        if (pic.isConnected) pic.src = URL.createObjectURL(new Blob([r.bytes], { type: r.mime }));
+      }).catch(function () {});
+    }
+    return pic;
+  }
+  function viewPhoto(s, src) {
+    $("lightImg").src = src; $("lightImg").dataset.who = s.id; $("lightbox").hidden = false;
+    resumeBytes(s.id + "_pic").then(function (r) {   // a larger copy, when one was saved with the picture
+      if (!$("lightbox").hidden && $("lightImg").dataset.who === s.id) $("lightImg").src = URL.createObjectURL(new Blob([r.bytes], { type: r.mime }));
+    }).catch(function () {});
+  }
+
+  /* ---------- sheets ---------- */
+  function openSheet(title, type, id) {
+    sheet = { type: type, id: id };
+    $("sheetTitle").textContent = title; $("sheetBody").textContent = ""; $("sheet").hidden = false; $("sheet").scrollTop = 0;
+  }
+  function closeSheet() { sheet = null; $("sheet").hidden = true; $("sheetBody").textContent = ""; }
+  function openDetail(id) {
+    var s = byId(id); if (!s) { closeSheet(); return; }
+    var same = sheet && sheet.type === "detail" && sheet.id === id, top = $("sheet").scrollTop;
+    openSheet(s.name, "detail", id);
+    var body = $("sheetBody"), st = s.status || "available", a = ageOf(s);
+    body.append(el("div", { class: "hero" }, heroPic(s), el("div", { class: "rb" },
+      el("div", { class: "acts" }, pill(st, STATUS[st] || st),
+        s.marital && s.marital !== "single" ? pill("hold", MARITAL[s.marital] || s.marital) : null, s.kohen ? pill("hold", "Kohen") : null),
+      el("div", { class: "msg", text: subline(s) }))));
+    var dl = el("dl");
+    function add(label, v) { if (v !== "" && v != null) dl.append(el("dt", { text: label }), el("dd", { text: String(v) })); }
+    add("Age", a != null ? a + (s.dob ? " (born " + fmtDate(s.dob) + ")" : "") : "");
+    add("Lives in", s.city); add("Height", s.height); add("Schools", s.education); add("My notes", s.notes);   // the profile shows only these; the rest is under Edit profile
+    body.append(el("div", { class: "card" }, dl.children.length ? dl : el("p", { class: "msg", text: "No details filled in yet." })));
+    body.append(el("div", { class: "acts" },
+      el("button", { type: "button", class: "btn primary", text: "Find ideas", onclick: function () { closeSheet(); setTab("ideas"); $("ideaFor").value = id; runIdeas(); } }),
+      el("button", { type: "button", class: "btn", text: "Edit profile", onclick: function () { openSingleForm(id); } }),
+      el("button", { type: "button", class: "btn", text: "New shidduch", onclick: function () { openMatchForm(null, id); } })));
+    var mine = matches.filter(function (m) { return m.m === id || m.f === id; }).sort(function (x, y) { return (Number(y.updatedAt) || 0) - (Number(x.updatedAt) || 0); });
+    body.append(el("h3", { text: "Shidduch history" }));
+    body.append(mine.length ? el("div", { class: "list" }, mine.map(matchRow)) : el("p", { class: "msg", text: "Nothing suggested yet." }));
+    /* Tap a tag to put it on, or take it off, this person's profile; it saves right away. */
+    var tags = el("div", { class: "chips", role: "group", "aria-label": "Years of learning" });
+    learnChips(learnOf(s), function (v) {
+      if (busy) return;
+      tags.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+      var u = Object.assign({}, s, { learnYears: toggleLearn(learnOf(s), v).join(","), groups: groupsOf(s).join(","), updatedAt: String(Date.now()) });
+      work(call("saveSingle", { record: u })).then(function () { put(singles, u); render(); }).catch(function () { render(); });
+    }).forEach(function (b) { tags.append(b); });
+    body.append(el("h3", { text: "Years of learning" }), el("p", { class: "msg", text: "Press one or more. Press again to take one off." }), tags);
+    /* Group tags on the profile: tap to put one on or take it off; it saves right away. */
+    var gTags = el("div", { class: "chips", role: "group", "aria-label": "Group" });
+    GROUPS.forEach(function (v) {
+      gTags.append(el("button", { type: "button", class: "chip", "aria-pressed": groupsOf(s).indexOf(v) >= 0 ? "true" : "false", text: v, onclick: function () {
+        if (busy) return;
+        gTags.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+        var u = Object.assign({}, s, { groups: toggleGroup(groupsOf(s), v).join(","), learnYears: learnOf(s).join(","), updatedAt: String(Date.now()) });
+        work(call("saveSingle", { record: u })).then(function () { put(singles, u); render(); }).catch(function () { render(); });
+      } }));
+    });
+    body.append(el("h3", { text: "Group" }), el("p", { class: "msg", text: "Press one or more. Press again to take one off." }), gTags);
+    /* Single or Engaged: tap to set it on this person; it saves right away. */
+    var stBox = el("div", { class: "chips", role: "group", "aria-label": "Status" });
+    QUICK.slice(1).forEach(function (q) {
+      stBox.append(el("button", { type: "button", class: "chip", "aria-pressed": st === q[0] ? "true" : "false", text: q[1], onclick: function () {
+        if (st === q[0]) return;
+        stBox.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+        var u = Object.assign({}, s, { status: q[0], updatedAt: String(Date.now()) }); work(call("saveSingle", { record: u })).then(function () { put(singles, u); render(); }).catch(function () { render(); });
+      } }));
+    });
+    body.append(el("h3", { text: "Status" }), stBox);
+    /* Resume, right on the profile: add the file here, then press Open to see it. */
+    var rBox = el("div", { class: "acts" });
+    var slots = [["resume", s.id], ["resume2", s.id + "_2"]], both = !!(s.resume && s.resume2);   // a profile holds up to two resumes
+    slots.forEach(function (sl, i) {
+      var mimeHere = s[sl[0]]; if (!mimeHere) return;
+      rBox.append(el("button", { type: "button", class: "btn primary", text: "Open resume" + (both ? " " + (i + 1) : ""),
+        onclick: function () { viewResume(s, function () { return resumeBytes(sl[1]); }); } }));
+    });
+    var rPick = el("input", { type: "file", id: "d-resume", accept: "application/pdf,.pdf,image/*", hidden: true, "aria-label": "Resume PDF or photo" });
+    var rAdd = el("button", { type: "button", class: s.resume ? "btn" : "btn primary", text: s.resume ? "Update resume" : "Add resume", onclick: function () { if (!busy) rPick.click(); } });   // a new file takes the place of the old resume
+    rPick.addEventListener("change", function () {
+      var file = rPick.files && rPick.files[0]; if (!file) return;
+      var isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || ""), mime = isPdf ? "application/pdf" : "image/jpeg";
+      rAdd.disabled = true; rAdd.textContent = "Adding the resume…";
+      (isPdf ? fileBase64(file) : photoBase64(file)).then(function (b64) {
+        if (!b64 || b64.length > 4000000) throw { error: "resumebig" };
+        var slot = slots[0], patch = { updatedAt: String(Date.now()), resume2: "" }; patch[slot[0]] = mime;   // one resume per person: the new file replaces what was there
+        var u = Object.assign({}, s, patch);
+        return work(call("saveResume", { id: slot[1], mime: mime, data: b64 }).then(function () { return call("saveSingle", { record: u }); })
+          .then(function () { put(singles, u); resumeCache[slot[1]] = { mime: mime, data: b64 }; if (s.resume2) { call("deleteResume", { id: s.id + "_2" }); delete resumeCache[s.id + "_2"]; } toast(s.resume ? "Resume updated" : "Resume added"); }));
+      }).then(function () { render(); }).catch(function (e) {
+        rAdd.disabled = false; rAdd.textContent = s.resume ? "Update resume" : "Add resume"; rPick.value = "";
+        if (e && e.error === "resumebig") toast("That file is too large to keep. Try a smaller PDF or a photo.");
+        else if (!e || !e.error) toast("That file could not be read. Use a PDF, or a JPEG or PNG photo.");
+      });
+    });
+    var pPick = el("input", { type: "file", id: "d-photo", accept: "image/*", hidden: true, "aria-label": "Picture" });
+    var pAdd = el("button", { type: "button", class: "btn", text: "Add a picture", onclick: function () { if (!busy) pPick.click(); } });
+    pPick.addEventListener("change", function () {
+      var file = pPick.files && pPick.files[0]; if (!file) return;
+      pAdd.disabled = true;
+      if (photos[s.id]) {   // there is a main picture already: this one is kept as another picture
+        photoBase64(file).then(function (big) {
+          if (!big || big.length > 4000000) throw { error: "resumebig" };
+          if (picsOf(s).length >= 12) throw { error: "picsfull" };
+          var k = (Math.random().toString(36) + "000000").slice(2, 8), key = picKey(s, k);
+          var u = Object.assign({}, s, { pics: picsOf(s).concat([k]).join(","), updatedAt: String(Date.now()) });
+          return work(call("saveResume", { id: key, mime: "image/jpeg", data: big }).then(function () { return call("saveSingle", { record: u }); })
+            .then(function () { put(singles, u); resumeCache[key] = { mime: "image/jpeg", data: big }; toast("Picture added"); }));
+        }).then(function () { render(); }).catch(function (e) {
+          pAdd.disabled = false; pPick.value = "";
+          toast(e && e.error === "picsfull" ? "This profile already holds 12 extra pictures." : "That picture could not be kept. Try a smaller JPEG or PNG.");
+        });
+        return;
+      }
+      shrink(file).then(function (data) {
+        return work(call("savePhoto", { id: s.id, data: data }).then(function () {
+          photos[s.id] = data;
+          return photoBase64(file).then(function (big) { return call("saveResume", { id: s.id + "_pic", mime: "image/jpeg", data: big }); })
+            .then(function () { delete resumeCache[s.id + "_pic"]; }, function () {});
+        }));
+      })
+
+        .then(function () { render(); })
+        .catch(function (e) { pAdd.disabled = false; pPick.value = ""; if (!e || !e.error) toast("That picture could not be read. Try a JPEG or PNG."); });
+    });
+    rBox.append(rAdd, rPick, pAdd, pPick);
+    /* Order along the bottom: Open resume PDF, Open photos, Add a picture, Remove, Add resume, then Send everything. */
+    var photosBtn = filesOf(s, "pics").length ? el("button", { type: "button", class: "btn primary", text: "Open photos", onclick: function () { viewPhotos(s); } }) : null;
+    var sendBtn = filesOf(s).length ? el("button", { type: "button", class: "btn", text: "Send resume and pictures", onclick: function () { sendAll(s); } }) : null;
+    var inBox = function (sel) { return Array.prototype.slice.call(rBox.querySelectorAll(sel)); };
+    var opens = inBox("button.primary").filter(function (b) { return b !== rAdd; }), removes = inBox("button.danger");
+    if (pAdd && !photosBtn) pAdd.textContent = "Add photos";   // with no picture yet the button says Add photos; once there is one it sits next to Open photos
+    opens.concat([rAdd, rPick, photosBtn, pAdd, pPick], removes, [sendBtn]).forEach(function (x) { if (x) rBox.append(x); });
+    body.append(el("h3", { text: "Resume and pictures" }), rBox);
+
+
+    if (same) $("sheet").scrollTop = top;
+  }
+  /* ---------- every picture of a person, and sending the resume and pictures on ---------- */
+  function extOf(mime) { return mime === "application/pdf" ? ".pdf" : mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : mime === "image/gif" ? ".gif" : ".jpg"; }
+  function fileBase(s) { return String(s.name || "profile").replace(/[^\w \-]+/g, "").replace(/\s+/g, " ").trim() || "profile"; }
+  /* A Share button for files that are already loaded, so the tap itself can open the phone's share menu. */
+  function shareBar(files) {
+    return el("div", { class: "acts" }, el("button", { type: "button", class: "btn primary", text: "Share", onclick: function () { sendNow(files); } }));
+  }
+  function viewPhotos(s) {
+    openSheet("Pictures: " + s.name, "resume", s.id);
+    var body = $("sheetBody"), list = filesOf(s, "pics");
+    if (!list.length) { body.append(el("p", { class: "msg", text: "No pictures yet. Go back and tap Add a picture." })); return; }
+    body.append(el("p", { class: "msg", text: "The first one is the main picture. Tap Share under a picture to send it to someone or save it to your phone." }));
+    list.forEach(function (f) {
+      var holder = el("div", { class: "card" }, el("p", { class: "msg", text: "Loading the picture…" }));
+      body.append(holder);
+      f.load().then(function (r) {
+        holder.textContent = "";
+        holder.append(el("img", { class: "page", src: URL.createObjectURL(new Blob([r.bytes], { type: r.mime })), alt: f.name }));
+        var acts = shareBar([new File([r.bytes], f.name + extOf(r.mime), { type: r.mime })]);
+        if (f.extra) acts.append(deleteButton("Remove this picture", function () { removePic(s, f.extra); }));
+        holder.append(acts);
+
+      }).catch(function () { holder.textContent = "This picture could not be loaded."; });
+    });
+  }
+  function saveFiles(files) {
+    files.forEach(function (f, i) { setTimeout(function () { var a = el("a", { href: URL.createObjectURL(f), download: f.name }); document.body.append(a); a.click(); a.remove(); }, i * 500); });
+  }
+  function shareFiles(files) {
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: files })) {
+        navigator.share({ files: files }).catch(function (e) {
+          if (e && e.name === "AbortError") return;
+          toast("The share menu could not open here, so the files are being saved to this device instead."); saveFiles(files);
+        });
+        return;
+      }
+    } catch (e) {}
+    saveFiles(files);
+  }
+  /* Gets the resume(s) and every picture ready first, so that the Send tap itself can open the phone's share menu. */
+  function sendAll(s) {
+    openSheet("Send: " + s.name, "resume", s.id);
+    var body = $("sheetBody"), list = filesOf(s), msg = el("p", { class: "msg", text: "Getting the resume and pictures ready…" });
+    body.append(msg);
+    if (!list.length) { msg.textContent = "Nothing is stored for this person yet."; return; }
+    Promise.all(list.map(function (f) {
+      return f.load().then(function (r) { return new File([r.bytes], f.name + extOf(r.mime), { type: r.mime }); }).catch(function () { return null; });
+    })).then(function (files) {
+      files = files.filter(Boolean);
+      if (!sheet || sheet.type !== "resume" || sheet.id !== s.id || !msg.parentNode) return;
+      if (!files.length) { msg.textContent = "The files could not be loaded. Check your connection, go back and try again."; return; }
+      msg.textContent = "Ready to send: " + files.map(function (x) { return x.name; }).join(", ");
+      body.append(el("div", { class: "acts" },
+        el("button", { type: "button", class: "btn primary", text: "Send", onclick: function () { sendNow(files); } }),
+        el("button", { type: "button", class: "btn", text: "Save to this device", onclick: function () { saveNow(files); } })),
+        el("p", { class: "msg", text: "Send opens your phone's share menu (WhatsApp, Messages, email). If it does not open, tap Save to this device and attach the files from there." }));
+    });
+  }
+  function picsOf(s) { return String((s && s.pics) || "").split(",").filter(function (v) { return /^[a-z0-9]{4,12}$/.test(v); }); }
+  function picKey(s, k) { return s.id + "_x" + k; }
+  /* Every stored file of a person: the resume(s), the main picture, then the other pictures. what "pics" leaves the resumes out. */
+  function filesOf(s, what) {
+    var out = [], nm = fileBase(s);
+    if (what !== "pics") [["resume", s.id], ["resume2", s.id + "_2"]].forEach(function (sl, i) {
+      if (s[sl[0]]) out.push({ name: nm + " resume" + (i ? " 2" : ""), key: sl[1] });
+    });
+    if (photos[s.id]) out.push({ name: nm + " picture", key: s.id + "_pic", main: true });
+    picsOf(s).forEach(function (k, i) { out.push({ name: nm + " picture " + (i + 2), key: picKey(s, k), extra: k }); });
+    out.forEach(function (f) {
+      f.load = function () {
+        return resumeBytes(f.key).catch(function (e) {
+          if (!f.main) throw e;   // an older main picture has only its small copy
+          var m = /^data:([^;,]+)(;base64)?,([\s\S]*)$/.exec(String(photos[s.id] || "")); if (!m) throw e;
+          var bin = m[2] ? atob(m[3]) : unescape(m[3]), arr = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          if (!arr.length) throw e;
+          return { bytes: arr, mime: m[1] };
+        });
+      };
+    });
+    return out;
+  }
+  function removePic(s, k) {
+    var u = Object.assign({}, s, { pics: picsOf(s).filter(function (x) { return x !== k; }).join(","), updatedAt: String(Date.now()) });
+    work(call("deleteResume", { id: picKey(s, k) }).then(function () { return call("saveSingle", { record: u }); }).then(function () { put(singles, u); delete resumeCache[picKey(s, k)]; }))
+      .then(function () { toast("Picture removed"); viewPhotos(u); }).catch(function () {});
+  }
+  function sendNow(files) { shareFiles(files); }
+  function saveNow(files) { saveFiles(files); }
+  /* Quick add: a name and one tap. The person is saved under Men or Women, whichever is showing; the rest is filled in later. */
+  function quickAdd() {
+    var box = $("quickName"), name = box.value.trim();
+    if (!name || !loaded) return;
+    var now = String(Date.now()), d = { id: newId("s"), name: name, gender: gFilter, status: "available", marital: "single", createdAt: now, updatedAt: now, metDate: today() };
+    put(singles, d); call("saveSingle", { record: d });
+    box.value = ""; render(); toast("Added " + name); box.focus();
+  }
+
+  /* ---------- the big list: a long PDF kept with the account. Search its words, or go to a page. ---------- */
+  var bigList = { text: null, pdf: null, q: "" };
+  function b64Bytes(b64) { var bin = atob(b64), arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); return arr; }
+  function bytesB64(bytes) { var out = "", step = 0x8000; for (var i = 0; i < bytes.length; i += step) out += String.fromCharCode.apply(null, bytes.subarray(i, i + step)); return btoa(out); }
+  function openList() {
+    openSheet("List", "list", null);
+    var body = $("sheetBody"), msg = el("p", { class: "msg", text: "Opening your list…" });
+    body.append(msg);
+    var ready = bigList.text ? Promise.resolve(bigList.text) : call("getList", { part: "text" }).then(function (r) {
+      bigList.text = JSON.parse(decodeURIComponent(escape(atob(r.data)))); return bigList.text;
+    });
+    ready.then(function (t) { if (sheet && sheet.type === "list") showList(t); }, function (e) {
+      if (!sheet || sheet.type !== "list") return;
+      if (e && e.error === "signin") { oops(e); return; }
+      if (e && e.error === "noresume") {
+        msg.textContent = "No list is stored yet. Choose the list PDF from this device. It is kept only in your account; nobody else who uses the app can see it.";
+        body.append(el("div", { class: "acts" }, listPicker("Choose the list PDF", "btn primary")));
+      } else msg.textContent = "The list could not be opened. Check your connection, go back and try again.";
+    });
+  }
+  /* The button that takes a PDF from this device, reads its words for searching, and stores both. */
+  function listPicker(label, cls) {
+    var pick = el("input", { type: "file", accept: "application/pdf,.pdf", hidden: true, "aria-label": label });
+    var btn = el("button", { type: "button", class: cls || "btn", text: label, onclick: function () { pick.click(); } });
+    pick.addEventListener("change", function () {
+      var file = pick.files && pick.files[0]; if (!file) return;
+      openSheet("List", "list", null);
+      var msg = el("p", { class: "msg", text: "Reading the list…" });
+      $("sheetBody").append(msg, el("p", { class: "msg", text: "Keep the app open until this finishes. A long list takes a minute or two." }));
+      uploadList(file, function (t) { msg.textContent = t; }).then(function () { toast("List saved"); if (sheet && sheet.type === "list") showList(bigList.text); }, function (e) {
+        msg.textContent = e && e.error === "listbig" ? "That file is too large to keep (the limit is 30 MB)." : e && e.error === "signin" ? "Please sign in again." : "The list could not be saved. Check that it is a PDF and that you are connected, then try again.";
+      });
+    });
+    return el("span", null, btn, pick);
+  }
+  async function uploadList(file, status) {
+    var buf = new Uint8Array(await file.arrayBuffer());
+    if (!buf.length || buf.length > 30000000) throw { error: "listbig" };
+    var lib = await loadPdf(), pdf = await lib.getDocument({ data: buf.slice(0) }).promise, pages = [];
+    var cards = await readCards(pdf, status);
+    var b64 = bytesB64(buf), size = 3600000, parts = Math.ceil(b64.length / size), old = bigList.text ? bigList.text.parts : 0;
+    for (var p = 0; p < parts; p++) {
+      status("Saving part " + (p + 1) + " of " + parts + "…");
+      await send({ action: "saveList", token: PASS, part: "pdf" + p, mime: "application/pdf", data: b64.substr(p * size, size) });
+    }
+    for (var x = parts; x < old; x++) await send({ action: "deleteList", token: PASS, part: "pdf" + x });
+    var t = { parts: parts, n: pdf.numPages, cards: cards, name: String(file.name || "") };
+    status("Saving the words for searching…");
+    await send({ action: "saveList", token: PASS, part: "text", mime: "text/plain", data: btoa(unescape(encodeURIComponent(JSON.stringify(t)))) });
+    bigList.text = t; bigList.pdf = Promise.resolve(pdf);
+  }
+  function listPdf(t) {
+    if (!bigList.pdf) bigList.pdf = (async function () {
+      var chunks = [], total = 0;
+      for (var i = 0; i < t.parts; i++) { var b = b64Bytes((await call("getList", { part: "pdf" + i })).data); chunks.push(b); total += b.length; }
+      var all = new Uint8Array(total), at = 0;
+      chunks.forEach(function (c) { all.set(c, at); at += c.length; });
+      return (await loadPdf()).getDocument({ data: all }).promise;
+    })().catch(function (e) { bigList.pdf = null; throw e; });
+    return bigList.pdf;
+  }
+  /* The book prints several people to a page, each in a box that starts with the name and a full date (the date of birth)
+     at its top right. Those dates mark where each box begins, so every person becomes one card: where it sits on the page
+     (for cutting out the original picture) and its words (for searching). */
+  async function readCards(pdf, status) {
+    var cards = [], isDate = function (s) { return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(s).trim()); };
+    var r3 = function (v) { return Math.round(Math.max(0, Math.min(1, v)) * 1000) / 1000; };
+    for (var pno = 1; pno <= pdf.numPages; pno++) {
+      var page = await pdf.getPage(pno), vp = page.getViewport({ scale: 1 }), W = vp.width, H = vp.height, tc = await page.getTextContent();
+      var items = tc.items.filter(function (x) { return x.str && x.str.trim(); }).map(function (x) { return { s: x.str, x: x.transform[4], y: x.transform[5] }; });
+      [0, 1].forEach(function (col) {
+        var left = col ? W / 2 : 0, inCol = items.filter(function (it) { return it.x >= left && it.x < left + W / 2; });
+        var tops = inCol.filter(function (it) { return isDate(it.s) && it.x - left > W * 0.2; }).map(function (it) { return it.y; }).sort(function (a, b) { return b - a; });
+        tops = tops.filter(function (y, i) { return i === 0 || tops[i - 1] - y > 40; });
+        var step = tops.length > 1 ? (tops[0] - tops[tops.length - 1]) / (tops.length - 1) : H / 5.3;
+        tops.forEach(function (ty, i) {
+          var hi = ty + 13, lo = i + 1 < tops.length ? tops[i + 1] + 13 : Math.max(0, ty - step + 13);
+          var mine = inCol.filter(function (it) { return it.y <= hi && it.y > lo; }).sort(function (a, b) { return b.y - a.y || a.x - b.x; });
+          var name = mine.filter(function (it) { return Math.abs(it.y - ty) < 4 && !isDate(it.s); }).map(function (it) { return it.s; }).join(" ").replace(/\s+/g, " ").trim();
+          var words = mine.map(function (it) { return it.s; }).join(" ").replace(/\s+/g, " ").trim();
+          if (words) cards.push({ p: pno, c: col, a: r3((H - hi) / H), b: r3((H - lo) / H), n: name || words.slice(0, 40), t: words });
+        });
+      });
+      if (status && (pno % 5 === 0 || pno === pdf.numPages)) status("Reading page " + pno + " of " + pdf.numPages + "…");
+    }
+    return cards;
+  }
+  function showList(t) {
+    sheet = { type: "list", id: null }; $("sheetTitle").textContent = "List";
+    var body = $("sheetBody"); body.textContent = "";
+    if (!t.cards) {   // a list stored before the cards existed: read it once more and keep the result
+      var msg = el("p", { class: "msg", text: "Getting the list ready to show one person at a time. This happens once and takes a minute or two; keep the app open." });
+      body.append(msg);
+      listPdf(t).then(function (pdf) { return readCards(pdf, function (s) { msg.textContent = s; }).then(function (cards) {
+        var fresh = { parts: t.parts, n: pdf.numPages, cards: cards, name: t.name || "" };
+        msg.textContent = "Saving…";
+        return send({ action: "saveList", token: PASS, part: "text", mime: "text/plain", data: btoa(unescape(encodeURIComponent(JSON.stringify(fresh)))) }).then(function () { bigList.text = fresh; });
+      }); }).then(function () { if (sheet && sheet.type === "list") showList(bigList.text); }, function (e) {
+        if (e && e.error === "signin") oops(e); else msg.textContent = "The list could not be prepared. Check your connection, go back and try again.";
+      });
+      return;
+    }
+    var total = t.n || 0, cards = t.cards;
+    var q = el("input", { type: "search", id: "listQ", placeholder: "Search the list: a name, a city, a yeshiva", "aria-label": "Search the list", value: bigList.q });
+    var info = el("p", { class: "msg" }), out = el("div", { class: "list" });
+    body.append(el("div", { class: "tools" }, q), info, out, el("div", { class: "acts" }, listPicker("Replace the list")));
+    var run = function () {
+      var text = q.value.trim().toLowerCase(), words = text.split(/\s+/).filter(Boolean);
+      bigList.q = q.value; out.textContent = "";
+      if (!cards.length) { info.textContent = "The app could not find the people in this PDF, so there is nothing to search. It works with the printed book layout: a name and a date of birth at the top of each box."; return; }
+      if (!text) { info.textContent = cards.length + " people in the list" + (t.name ? " (" + t.name + ")" : "") + ". Type a name, a city or a yeshiva and tap a result to see that person's box from the book."; return; }
+      var byName = [], byText = [];
+      cards.forEach(function (c, i) {
+        var nm = c.n.toLowerCase(), all = c.t.toLowerCase();
+        if (words.every(function (w) { return nm.indexOf(w) >= 0; })) byName.push(i);
+        else if (words.every(function (w) { return all.indexOf(w) >= 0; })) byText.push(i);
+      });
+      // When someone's own name matches, only those show. People who have the word somewhere else in their box (a father, a reference, a street) wait behind a button.
+      var wide = !byName.length || bigList.wideQ === text, hits = wide ? byName.concat(byText) : byName;
+      info.textContent = hits.length ? (byName.length ? byName.length + " with that name" : "Nobody has that name") + (wide && byText.length ? "; " + byText.length + " more have it in their other details" : "") + (hits.length > 80 ? ". Showing the first 80." : ".") : "Nobody in the list matches that.";
+      hits.slice(0, 80).forEach(function (i) {
+        var c = cards[i], rest = c.t.indexOf(c.n) === 0 ? c.t.slice(c.n.length) : c.t;
+        out.append(el("button", { type: "button", class: "row", onclick: function () { showCard(t, i); } },
+          el("div", { class: "rb" }, el("div", { class: "nm", text: c.n }), el("div", { class: "sub", text: rest.trim().slice(0, 110) + " …" }))));
+      });
+      if (!wide && byText.length) out.append(el("button", { type: "button", class: "btn", text: "Also show " + byText.length + " who have that in their other details", onclick: function () { bigList.wideQ = text; run(); } }));
+    };
+    q.addEventListener("input", run); run();
+  }
+  /* One person's box, cut out of the page of the book and shown large. */
+  function showCard(t, i) {
+    var c = t.cards[i];
+    sheet = { type: "list", id: "c" + i }; $("sheetTitle").textContent = c.n;
+    var body = $("sheetBody"); body.textContent = ""; $("sheet").scrollTop = 0;
+    var nav = el("div", { class: "acts" },
+      el("button", { type: "button", class: "btn", text: "Previous", disabled: i <= 0, onclick: function () { showCard(t, i - 1); } }),
+      el("button", { type: "button", class: "btn", text: "Next", disabled: i >= t.cards.length - 1, onclick: function () { showCard(t, i + 1); } }),
+      el("button", { type: "button", class: "btn", text: "Whole page", onclick: function () { showListPage(t, c.p); } }),
+      el("button", { type: "button", class: "btn", text: "Back to search", onclick: function () { showList(t); } }));
+    var msg = el("p", { class: "msg", text: bigList.pdf ? "Loading…" : "Loading the book. The first person takes a little longer; after that it is quick." });
+    body.append(msg, nav);
+    var paint = function (full) {
+      if (!sheet || sheet.id !== "c" + i) return;
+      var x0 = Math.round(full.width * (c.c ? 0.5 : 0.015)), w = Math.round(full.width * 0.485), y0 = Math.round(full.height * c.a), h = Math.max(10, Math.round(full.height * (c.b - c.a)));
+      var cut = el("canvas", { class: "page" });
+      cut.width = w; cut.height = h;
+      cut.getContext("2d").drawImage(full, x0, y0, w, h, 0, 0, w, h);
+      msg.remove(); body.insertBefore(cut, nav);
+    };
+    if (bigList.shot && bigList.shot.p === c.p) { paint(bigList.shot.canvas); return; }
+    listPdf(t).then(function (pdf) { return pdf.getPage(c.p); }).then(function (page) {
+      var vp = page.getViewport({ scale: 4 }), full = document.createElement("canvas");   // drawn large so the cut-out box is as sharp as the book
+      full.width = Math.ceil(vp.width); full.height = Math.ceil(vp.height);
+      return page.render({ canvasContext: full.getContext("2d"), viewport: vp }).promise.then(function () { bigList.shot = { p: c.p, canvas: full }; paint(full); });
+    }).catch(function (e) { if (e && e.error === "signin") oops(e); else msg.textContent = "That person could not be shown. Check your connection and try again."; });
+  }
+  function showListPage(t, n) {
+    sheet = { type: "list", id: n }; $("sheetTitle").textContent = "List: page " + n + " of " + (t.n || (t.pages || []).length);
+    var body = $("sheetBody"); body.textContent = ""; $("sheet").scrollTop = 0;
+    var nav = function () {
+      return el("div", { class: "acts" },
+        el("button", { type: "button", class: "btn", text: "Previous page", disabled: n <= 1, onclick: function () { showListPage(t, n - 1); } }),
+        el("button", { type: "button", class: "btn", text: "Next page", disabled: n >= (t.n || (t.pages || []).length), onclick: function () { showListPage(t, n + 1); } }),
+        el("button", { type: "button", class: "btn", text: "Back to search", onclick: function () { showList(t); } }));
+    };
+    var msg = el("p", { class: "msg", text: bigList.pdf ? "Loading the page…" : "Loading the list. The first page takes a little longer; after that it is quick." });
+    body.append(nav(), msg);
+    listPdf(t).then(function (pdf) { return pdf.getPage(n); }).then(function (page) {
+      if (!sheet || sheet.type !== "list" || sheet.id !== n) return;
+      var base = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: Math.min(3, 1400 / base.width) }), c = el("canvas", { class: "page" });
+      c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+      msg.remove(); body.append(c, nav());
+      return page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    }).catch(function (e) { if (e && e.error === "signin") oops(e); else msg.textContent = "That page could not be shown. Check your connection and try again."; });
+  }
+  /* Settings. They are saved with the account, so they follow the person to every device, and each person who uses the app has their own. */
+  var prefs = { night: nightOn, size: "", start: "m" }, startUsed = false;
+  function applyPrefs() {
+    nightOn = !!prefs.night; setNight(nightOn);
+    document.documentElement.style.fontSize = prefs.size === "s" ? "84%" : prefs.size === "l" ? "112.5%" : prefs.size === "xl" ? "125%" : "";
+    if (!startUsed && (prefs.start === "f" || prefs.start === "m")) {   // the Men or Women side to open on, used once per opening
+      startUsed = true;
+      if (prefs.start !== gFilter) {
+        gFilter = prefs.start;
+        document.querySelectorAll(".seg button").forEach(function (x) { x.setAttribute("aria-pressed", x === document.querySelector('.seg button[data-g="' + gFilter + '"]') ? "true" : "false"); });
+      }
+    }
+  }
+  function usePrefs(saved) {
+    if (!saved || typeof saved !== "object") return;
+    ["night", "size", "start"].forEach(function (k) { if (saved[k] !== undefined) prefs[k] = saved[k]; });
+    applyPrefs(); render();
+  }
+  function setPref(k, v) { prefs[k] = v; applyPrefs(); call("saveSettings", { settings: prefs }); if (sheet && sheet.type === "settings") openSettings(); }
+  function openSettings() {
+    openSheet("Settings", "settings", null);
+    var pick = function (k, opts) {
+      return el("div", { class: "chips", role: "group" }, opts.map(function (o) {
+        return el("button", { type: "button", class: "chip", "aria-pressed": (prefs[k] || "") === o[0] || (k === "night" && !!prefs.night === o[0]) ? "true" : "false", text: o[1], onclick: function () { setPref(k, o[0]); } });
+      }));
+    };
+    var linkBox = el("p", { class: "msg", style: "user-select:text;overflow-wrap:anywhere" });
+    $("sheetBody").append(
+      el("div", { class: "card" }, el("h3", { text: "Look" }),
+        el("p", { class: "msg", text: "Night look uses dark colors for the evening. The app never changes this by itself." }), pick("night", [[false, "Day"], [true, "Night"]]),
+        el("p", { class: "msg", text: "Size of the wording" }), pick("size", [["s", "Small"], ["", "Regular"], ["l", "Larger"], ["xl", "Largest"]])),
+      el("div", { class: "card" }, el("h3", { text: "When the app opens" }),
+        el("p", { class: "msg", text: "Which side to show first." }), pick("start", [["m", "Boys"], ["f", "Girls"]])),
+      el("div", { class: "card" }, el("h3", { text: "Your list" }),
+        el("p", { text: singles.length + (singles.length === 1 ? " person is" : " people are") + " saved: " + singles.filter(function (x) { return x.gender !== "f"; }).length + " boys and " + singles.filter(function (x) { return x.gender === "f"; }).length + " girls. " + singles.filter(function (x) { return (x.status || "available") === "available"; }).length + " are single." }),
+        el("p", { class: "msg", text: "Get the latest from your Google Sheet, for example after adding people on another device. The round arrow at the top does the same." }),
+        el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Refresh", onclick: function () { closeSheet(); $("refresh").click(); } }))),
+      el("div", { class: "card" }, el("h3", { text: "Give the app to someone" }),
+        el("p", { class: "msg", text: "Send them this link. They make their own login and see only their own list, never yours. Their settings are their own too." }),
+        el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Copy the link", onclick: function () {
+          var link = shareUrl() || "", shown = function () { linkBox.textContent = link; };
+          if (!link) { toast("The link is not ready yet. Tap Refresh and try again."); return; }
+          try { navigator.clipboard.writeText(link).then(function () { toast("Link copied"); }, shown); } catch (e) { shown(); }
+        } })), linkBox),
+      el("div", { class: "card" }, el("h3", { text: "Account" }),
+        el("p", { class: "msg", text: "Signed in as " + (ME || "your account") + ". Your private link and signing out are under Account." }),
+        el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Open account", onclick: function () { openAccount(); } }))));
+  }
+  function field(f, val) {
+    var id = "f-" + f.k, input;
+    if (f.type === "gender") {
+      return el("div", { class: "fld" }, el("span", { text: f.label }), el("div", { class: "radios" },
+        el("label", { class: "chk" }, el("input", { type: "radio", name: "gender", id: "f-gender-m", value: "m", checked: val !== "f" }), "Boy"),
+        el("label", { class: "chk" }, el("input", { type: "radio", name: "gender", id: "f-gender-f", value: "f", checked: val === "f" }), "Girl")));
+    }
+    if (f.type === "check") return el("label", { class: "chk" }, el("input", { type: "checkbox", id: id, checked: !!val }), f.label);
+    if (f.type === "select") {
+      input = el("select", { id: id });
+      Object.keys(f.opts).forEach(function (k) { if (k === "married" && val !== "married") return; input.append(el("option", { value: k, text: f.opts[k] })); });
+      input.value = val && f.opts[val] ? val : Object.keys(f.opts)[0];
+    } else if (f.type === "area") input = el("textarea", { id: id, placeholder: f.ph, value: val || "" });
+    else input = el("input", { id: id, type: f.type, placeholder: f.ph, value: val == null ? "" : val, inputmode: f.type === "number" ? "numeric" : null, min: f.type === "number" ? "0" : null });
+    return el("label", { class: "fld" }, el("span", { text: f.label }), input);
+  }
+  function deleteButton(label, fn) {
+    var armed = false;
+    return el("button", { type: "button", class: "btn danger", text: label, onclick: function (e) {
+      if (!armed) { armed = true; e.currentTarget.textContent = "Tap again to delete for good"; return; }
+      fn(e.currentTarget);
+    } });
+  }
+  function openSingleForm(id) {
+    var s = id ? byId(id) : null;
+    openSheet(s ? "Edit " + s.name : "Add single", "single", id);
+    var form = el("form", { novalidate: true }), i = 0;
+    var photo = { data: "", removed: false }, prev = el("span"), file = el("input", { type: "file", id: "f-photo", accept: "image/*", "aria-label": "Choose a photo" });
+    var rm = el("button", { type: "button", class: "btn", text: "Remove photo", onclick: function () { photo.data = ""; photo.removed = true; file.value = ""; showPhoto(); } });
+    function showPhoto() {
+      prev.textContent = "";
+      var src = photo.data || (photo.removed || !id ? "" : photos[id]);
+      prev.append(avatar({ id: id || "", name: s ? s.name : "" }, "lg", src || "none"));
+      rm.hidden = !src;
+    }
+    file.addEventListener("change", function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      shrink(f).then(function (d) { photo.data = d; photo.file = f; photo.removed = false; showPhoto(); })
+        .catch(function () { file.value = ""; toast("That picture could not be read. Try a JPEG or PNG."); });
+    });
+    showPhoto();
+    form.append(el("div", { class: "fld" }, el("span", { text: "Photo" }), el("div", { class: "photoedit" }, prev, el("div", null, file, rm))));
+    while (i < FIELDS.length) {
+      var f = FIELDS[i];
+      if (f.pair === 1 && FIELDS[i + 1] && FIELDS[i + 1].pair === 2) {
+        form.append(el("div", { class: "pair" }, field(f, s ? s[f.k] : ""), field(FIELDS[i + 1], s ? s[FIELDS[i + 1].k] : "")));
+        i += 2;
+      } else { form.append(field(f, s ? (f.k === "metDate" ? dayOf(s) : s[f.k]) : (f.k === "gender" && gFilter === "f" ? "f" : f.k === "metDate" ? today() : ""))); i++; }
+    }
+    var learn = s ? learnOf(s) : [], learnBox = el("div", { class: "chips", role: "group", "aria-label": "Years of learning" });
+    var showLearn = function () { learnBox.textContent = ""; learnChips(learn, function (v) { learn = toggleLearn(learn, v); showLearn(); }).forEach(function (b) { learnBox.append(b); }); };
+    showLearn();
+    form.append(el("div", { class: "fld" }, el("span", { text: "Years of learning (press one or more, or none)" }), learnBox));
+    /* Put what was read off a resume into the form; only boxes the resume actually gave. */
+    var fillFrom = function (data) {
+      var n = 0;
+      FIELDS.forEach(function (f) {
+        var v = data[f.k];
+        if (v == null || v === "") return;
+        if (f.type === "gender") { if (v === "f" || v === "m") { $("f-gender-" + v).checked = true; n++; } return; }
+        if (f.type === "check") { if (v === true) { $("f-" + f.k).checked = true; n++; } return; }
+        if (f.type === "select") { if (f.opts[v]) { $("f-" + f.k).value = v; n++; } return; }
+        if (f.type === "date" && !/^\d{4}-\d{2}-\d{2}$/.test(String(v))) return;
+        if (f.type === "number" && !/^\d{1,3}$/.test(String(v))) return;
+        $("f-" + f.k).value = String(v).slice(0, 3000); n++;
+      });
+      return n;
+    };
+    var kept = null;   // the resume file itself, stored with the profile on Save
+    var rStatus = el("p", { class: "msg", text: "Choose a PDF, or take or choose a photo of the resume. The app reads the words and fills in the boxes it recognises for you to check." });
+    var rFile = el("input", { type: "file", id: "f-resume", accept: "application/pdf,.pdf,image/*", "aria-label": "Resume PDF or photo" });
+    rFile.addEventListener("change", function () {
+      var f = rFile.files && rFile.files[0]; if (!f) return;
+      var isPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name || "");
+      rFile.disabled = true; rStatus.textContent = "Reading the resume. This can take up to half a minute.";
+      kept = null;
+      (isPdf ? fileBase64(f) : photoBase64(f)).then(function (b64) {
+        if (b64 && b64.length <= 4000000) kept = { mime: isPdf ? "application/pdf" : "image/jpeg", data: b64 };
+        return call("readResume", { mime: isPdf ? "application/pdf" : "image/jpeg", data: b64 });
+      }).then(function (r) {
+        var n = r.text && r.text.trim() ? fillFrom(parseResume(r.text)) : 0;
+        rStatus.textContent = n ? "Filled in " + n + " boxes. Check them over; anything the app could not place is in My private notes."
+          : "No words could be read from that file. Try a clearer, straight-on photo or the PDF.";
+      }).catch(function (e) {
+        var c = e && e.error;
+        if (c === "badpass" || c === "locked" || c === "nopass") { oops(e); return; }
+        rStatus.textContent = c === "resumebig" ? "That file is too large. Try a photo of the resume instead."
+          : c === "resumeread" ? "Google could not read that file. Try a clearer photo or a different file."
+          : c === "network" ? "Could not reach Google. Check your connection and choose the file again."
+          : "That file could not be read. Use a PDF, or a JPEG or PNG photo.";
+      }).then(function () { rFile.disabled = false; rFile.value = ""; rStatus.textContent += kept ? " The file itself will be kept on this profile when you save." : " This file is too large to keep on the profile."; });
+    });
+    form.prepend(el("div", { class: "import" }, el("strong", { text: "Fill in from a resume" }), rFile, rStatus));
+    var save = el("button", { type: "submit", class: "btn primary", text: "Save" });
+    form.append(el("div", { class: "acts" }, save, el("button", { type: "button", class: "btn", text: "Cancel", onclick: function () { s ? openDetail(id) : closeSheet(); } })));
+    if (s) form.append(el("div", { class: "acts" }, deleteButton("Delete this profile", function (btn) {
+      work(call("deleteSingle", { id: id }), btn).then(function () {
+        singles = singles.filter(function (x) { return x.id !== id; });
+        matches = matches.filter(function (m) { return m.m !== id && m.f !== id; });
+        delete photos[id]; closeSheet(); render();
+      }).catch(function () {});
+    })));
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var d = { id: id || newId("s") };
+      FIELDS.forEach(function (f) {
+        if (f.type === "gender") d.gender = $("f-gender-f").checked ? "f" : "m";
+        else if (f.type === "check") d[f.k] = $("f-" + f.k).checked;
+        else d[f.k] = $("f-" + f.k).value.trim();
+      });
+      if (!d.name) { toast("Please enter a name."); $("f-name").focus(); return; }
+      d.learnYears = learn.join(",");
+      d.pics = s && s.pics ? s.pics : "";   // the other pictures are kept on the profile, so an edit keeps them
+      d.groups = s ? groupsOf(s).join(",") : "";   // group tags are set on the profile, so an edit keeps them
+      var slot2 = false;   // a second resume goes in the second place
+      d.resume = kept && !slot2 ? kept.mime : (s && s.resume ? s.resume : "");
+      d.resume2 = kept && slot2 ? kept.mime : (s && s.resume2 ? s.resume2 : "");
+
+      d.ageYear = d.age ? (s && String(s.age) === d.age && s.ageYear ? s.ageYear : String(new Date().getFullYear())) : "";
+      d.createdAt = s && s.createdAt ? s.createdAt : String(Date.now()); d.updatedAt = String(Date.now());
+      var job = call("saveSingle", { record: d }).then(function () {
+        put(singles, d);
+        if (photo.data) return call("savePhoto", { id: d.id, data: photo.data }).then(function () {
+          photos[d.id] = photo.data;
+          if (photo.file) return photoBase64(photo.file).then(function (big) { return call("saveResume", { id: d.id + "_pic", mime: "image/jpeg", data: big }); })
+            .then(function () { delete resumeCache[d.id + "_pic"]; }, function () {});   // the larger copy is a bonus; the small one is already saved
+        });
+
+        if (photo.removed && photos[d.id]) return call("deletePhoto", { id: d.id }).then(function () { delete photos[d.id]; });
+      });
+      var job2 = job.then(function () {
+        if (kept) return call("saveResume", { id: d.id + (slot2 ? "_2" : ""), mime: kept.mime, data: kept.data }).then(function () { resumeCache[d.id + (slot2 ? "_2" : "")] = { mime: kept.mime, data: kept.data }; });
+      });
+      work(job2, save).then(function () { sheet = null; render(); if (id) openDetail(d.id); else { closeSheet(); toast("Added " + d.name); } }).catch(function () { render(); });
+
+    });
+    $("sheetBody").append(form);
+  }
+  /* A search box over a list of people: type part of a name or city and the list below shrinks to match. */
+  function finder(sel, ph) {
+    var all = Array.prototype.slice.call(sel.options).map(function (o) { return { v: o.value, t: o.textContent }; });
+    var inp = el("input", { type: "search", placeholder: ph, "aria-label": ph });
+    inp.addEventListener("input", function () {
+      var q = inp.value.trim().toLowerCase(), keep = sel.value;
+      var hits = all.filter(function (o) { return !o.v || !q || o.t.toLowerCase().indexOf(q) >= 0; });
+      sel.textContent = "";
+      hits.forEach(function (o) { sel.append(el("option", { value: o.v, text: o.t })); });
+      var real = hits.filter(function (o) { return o.v; });
+      sel.value = real.length === 1 ? real[0].v : (hits.some(function (o) { return o.v === keep; }) ? keep : "");
+    });
+    return inp;
+  }
+  function personSelect(id, gender, val, locked) {
+    var sel = el("select", { id: id, disabled: locked });
+    sel.append(el("option", { value: "", text: "Choose" }));
+    singles.filter(function (s) { return s.gender === gender; }).sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); })
+      .forEach(function (s) { sel.append(el("option", { value: s.id, text: s.name + " (" + subline(s) + ")" })); });
+    sel.value = val || "";
+    return sel;
+  }
+  function openMatchForm(id, presetPerson, firstStage) {
+    var m = id ? matches.filter(function (x) { return x.id === id; })[0] : null;
+    if (id && !m) return;
+    var back = sheet && sheet.type === "detail" ? sheet.id : null;
+    var pre = presetPerson ? byId(presetPerson) : null;
+    openSheet(m ? nameOf(m.m) + " & " + nameOf(m.f) : "New shidduch", "match", id);
+    var form = el("form", { novalidate: true });
+    var mSel = personSelect("m-m", "m", m ? m.m : pre && pre.gender === "m" ? pre.id : "", !!m);
+    var fSel = personSelect("m-f", "f", m ? m.f : pre && pre.gender === "f" ? pre.id : "", !!m);
+    var stage = el("select", { id: "m-stage" });
+    Object.keys(STAGE).forEach(function (k) { stage.append(el("option", { value: k, text: STAGE[k] })); });
+    stage.value = m && STAGE[m.stage] ? m.stage : (firstStage || "suggested");
+    var follow = el("input", { id: "m-follow", type: "date", value: m ? m.followUp || "" : "" });
+    var notes = el("textarea", { id: "m-notes", value: m ? m.notes || "" : "", placeholder: "Who you spoke to, what each side said, what is next" });
+    var save = el("button", { type: "submit", class: "btn primary", text: "Save" });
+    form.append(
+      el("div", { class: "fld" }, el("span", { text: "Boy" }), m ? null : finder(mSel, "Search boys by name or city"), mSel),
+      el("div", { class: "fld" }, el("span", { text: "Girl" }), m ? null : finder(fSel, "Search girls by name or city"), fSel),
+      el("div", { class: "pair" }, el("label", { class: "fld" }, el("span", { text: "Stage" }), stage), el("label", { class: "fld" }, el("span", { text: "Follow up on" }), follow)),
+      el("label", { class: "fld" }, el("span", { text: "Notes" }), notes),
+      el("div", { class: "acts" }, save, el("button", { type: "button", class: "btn", text: "Cancel", onclick: function () { back ? openDetail(back) : closeSheet(); } })));
+    if (m) form.append(el("div", { class: "acts" },
+      el("button", { type: "button", class: "btn", text: "Open his profile", onclick: function () { openDetail(m.m); } }),
+      el("button", { type: "button", class: "btn", text: "Open her profile", onclick: function () { openDetail(m.f); } }),
+      deleteButton("Delete this shidduch", function (btn) {
+        work(call("deleteMatch", { id: id }), btn).then(function () { matches = matches.filter(function (x) { return x.id !== id; }); closeSheet(); render(); }).catch(function () {});
+      })));
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!mSel.value || !fSel.value) { toast("Choose both a boy and a girl."); return; }
+      if (!m && matches.some(function (x) { return x.m === mSel.value && x.f === fSel.value; })) { toast("These two already have a shidduch on file."); return; }
+      var d = { id: id || newId("m"), m: mSel.value, f: fSel.value, stage: stage.value, followUp: follow.value, notes: notes.value.trim(),
+        createdAt: m && m.createdAt ? m.createdAt : String(Date.now()), updatedAt: String(Date.now()) };
+      d.redtAt = m && m.redtAt ? m.redtAt : (d.stage !== "idea" ? today() : "");
+      d.dates = m && m.dates && d.stage === "middle" ? m.dates : "";
+      d.endReason = m && m.endReason && d.stage === "ended" ? m.endReason : "";
+      var job = call("saveMatch", { record: d }).then(function () { put(matches, d); return syncStatuses(d); });
+      work(job, save).then(function () { render(); back ? openDetail(back) : closeSheet(); }).catch(function () { render(); });
+    });
+    if (m) {   /* boxes at the bottom of an idea: where it is holding, and how many dates */
+      var hold = el("div", { class: "chips", role: "group", "aria-label": "Where it is holding" });
+      [["yes", "Gave a yes"], ["middle", "In the middle"], ["ended", "Ended"]].forEach(function (q) {
+        hold.append(el("button", { type: "button", class: "chip", "aria-pressed": m.stage === q[0] ? "true" : "false", text: q[1],
+          onclick: function () { if (m.stage !== q[0]) setHolding(m, q[0], q[0] === "middle" ? String(m.dates || "") : "", hold); } }));
+      });
+      form.append(el("div", { class: "fld" }, el("span", { text: "Where is it holding?" }), hold));
+      if (m.stage === "middle") {
+        var dts = el("div", { class: "chips", role: "group", "aria-label": "Number of dates" });
+        ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"].forEach(function (v) {
+          dts.append(el("button", { type: "button", class: "chip", "aria-pressed": String(m.dates || "") === v ? "true" : "false", text: v,
+            onclick: function () { setHolding(m, "middle", String(m.dates || "") === v ? "" : v, dts); } }));
+        });
+        form.append(el("div", { class: "fld" }, el("span", { text: "How many dates so far?" }), dts));
+      }
+      if (m.stage === "ended") {
+        var why = el("textarea", { id: "m-why", value: m.endReason || "", placeholder: "For example: she felt he was too quiet" });
+        form.append(el("label", { class: "fld" }, el("span", { text: "What was wrong with my idea?" }), why),
+          el("div", { class: "acts" }, el("button", { type: "button", class: "btn", text: "Save the reason", onclick: function () { setHolding(m, "ended", "", hold, why.value.trim()); } })));
+      }
+    }
+    $("sheetBody").append(form);
+  }
+  function setHolding(m, stage, dates, box, reason) {
+    if (reason === undefined) reason = stage === "ended" ? (m.endReason || "") : "";
+    if (busy) return;
+    box.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+    var u = Object.assign({}, m, { stage: stage, dates: dates, endReason: reason, updatedAt: String(Date.now()) });
+    if (!u.redtAt) u.redtAt = today();
+    work(call("saveMatch", { record: u }).then(function () { put(matches, u); return syncStatuses(u); }))
+      .then(function () { render(); openMatchForm(u.id); }).catch(function () { render(); });
+  }
+  /* Keep each person's status in step with their shidduchim: dating -> Dating, engaged -> Engaged, back to Available when a dating one ends. */
+  function syncStatuses(d) {
+    var chain = Promise.resolve();
+    [d.m, d.f].forEach(function (pid) {
+      var s = byId(pid); if (!s) return;
+      if (s.status === "married") return;
+      var cur = s.status || "available", mine = matches.filter(function (x) { return x.m === pid || x.f === pid; }), next = cur;
+      if (mine.some(function (x) { return x.stage === "engaged"; })) next = "engaged";
+      else if (mine.some(function (x) { return (x.stage === "dating" || x.stage === "middle"); })) { if (cur === "available" || cur === "engaged") next = "busy"; }
+      else if (cur === "busy" || cur === "engaged") next = "available";
+      if (next !== cur) chain = chain.then(function () {
+        var u = Object.assign({}, s, { status: next, updatedAt: String(Date.now()) });
+        return call("saveSingle", { record: u }).then(function () { put(singles, u); });
+      });
+    });
+    return chain;
+  }
+
+  /* ---------- ideas: a simple score, no AI ---------- */
+  var KEYS = { yeshivish: 1, litvish: 1, modern: 1, chassidish: 1, heimish: 1, sephardi: 1, chabad: 1, machmir: 1, traditional: 1, ashkenazi: 0.5, working: 0.5, kollel: 0.5 };
+  function keyWords(s) {
+    var out = {};
+    (String(s.hashkafa + " " + s.background).toLowerCase().match(/[a-z]+/g) || []).forEach(function (w) {
+      if (w === "sephardic" || w === "syrian") w = "sephardi";
+      if (w === "chasidish" || w === "chassidic") w = "chassidish";
+      if (w === "lubavitch") w = "chabad";
+      if (KEYS[w]) out[w] = KEYS[w];
+    });
+    return out;
+  }
+  function wants(wanter, age) {
+    var lo = Number(wanter.ageMin) || 0, hi = Number(wanter.ageMax) || 0;
+    if (age == null || (!lo && !hi)) return null;
+    return !((lo && age < lo) || (hi && age > hi));
+  }
+  function region(s) { var p = String(s.city || "").toLowerCase().split(","); return (p[p.length - 1] || "").trim(); }
+  function score(p, c) {
+    var pts = 0, why = [], concern = [], pa = ageOf(p), ca = ageOf(c), a1 = wants(p, ca), a2 = wants(c, pa);
+    if (a1 === true && a2 === true) { pts += 4; why.push("Each is in the age range the other asked for"); }
+    else {
+      if (a1 === true || a2 === true) pts += 2;
+      if (a1 === false) { pts -= 3; concern.push(c.name + " (" + ca + ") is outside the ages " + p.name + " asked for"); }
+      if (a2 === false) { pts -= 3; concern.push(p.name + " (" + pa + ") is outside the ages " + c.name + " asked for"); }
+      if (a1 == null && a2 == null && pa != null && ca != null) { var gap = Math.abs(pa - ca); if (gap <= 3) { pts += 2; why.push("Close in age"); } else if (gap > 7) pts -= 2; }
+    }
+    var kp = keyWords(p), kc = keyWords(c), shared = Object.keys(kp).filter(function (k) { return kc[k]; });
+    var strong = shared.filter(function (k) { return KEYS[k] === 1; });
+    if (strong.length) { pts += 3 * Math.min(strong.length, 2); why.push("Similar hashkafa and background (" + strong.join(", ") + ")"); }
+    else if (shared.length) pts += 1;
+    else if (p.hashkafa && c.hashkafa) pts -= 2;
+    if (p.city && c.city && p.city.toLowerCase().trim() === c.city.toLowerCase().trim()) { pts += 2; why.push("Both live in " + c.city); }
+    else if (region(p) && region(p) === region(c)) { pts += 1; why.push("Same area"); }
+    var lp = learnOf(p), lc = learnOf(c);
+    if (lp.length && lc.length) {
+      var both = lp.filter(function (v) { return lc.indexOf(v) >= 0; }), near = 9;
+      lp.forEach(function (a) { lc.forEach(function (b) { near = Math.min(near, Math.abs(LEARN.indexOf(a) - LEARN.indexOf(b))); }); });
+      if (both.length) { pts += 3; why.push("Same plan for learning (" + both.map(learnLabel).join(", ") + " years)"); }
+      else if (near === 1) pts += 1;
+      else { pts -= 2; concern.push("Different plans for years of learning (" + learnText(p) + " and " + learnText(c) + ")"); }
+    }
+    var pm = p.marital && p.marital !== "single", cm = c.marital && c.marital !== "single";
+    if (pm && cm) { pts += 2; why.push("Both were married before"); }
+    else if (pm || cm) { pts -= 1; concern.push("One side was married before"); }
+    var man = p.gender === "m" ? p : c, woman = p.gender === "m" ? c : p;
+    if (man.kohen && woman.marital === "divorced") { pts -= 10; concern.push("He is a kohen and she is divorced. Ask a rav"); }
+    return { id: c.id, pts: pts, why: why.join(". "), concern: concern.join(". ") };
+  }
+  function runIdeas() {
+    var p = byId($("ideaFor").value); if (!p) return;
+    var cands = singles.filter(function (s) {
+      if (s.gender === p.gender || (s.status || "available") !== "available") return false;
+      var mId = p.gender === "m" ? p.id : s.id, fId = p.gender === "m" ? s.id : p.id;
+      return !matches.some(function (x) { return x.m === mId && x.f === fId; });
+    });
+    if (!cands.length) { ideas = null; renderIdeas(); $("ideaMsg").textContent = "Nobody available is left to suggest for " + p.name + "."; return; }
+    var items = cands.map(function (c) { return score(p, c); }).filter(function (x) { return x.pts > 0; }).sort(function (a, b) { return b.pts - a.pts; }).slice(0, 8);
+    ideas = { forId: p.id, saved: {}, items: items };
+    $("ideaMsg").textContent = items.length ? "Ideas for " + p.name + ", strongest first. These come from a simple comparison of age, hashkafa, background and location; you know the people."
+      : "Nothing scored well for " + p.name + " among the " + cands.length + " available right now.";
+    renderIdeas();
+  }
+  function saveIdea(it, btn) {
+    var p = byId(ideas.forId), s = byId(it.id); if (!p || !s) return;
+    var d = { id: newId("m"), m: p.gender === "m" ? p.id : s.id, f: p.gender === "m" ? s.id : p.id, stage: "idea", followUp: "",
+      notes: [it.why, it.concern ? "Check: " + it.concern : ""].filter(Boolean).join("\n"), createdAt: String(Date.now()), updatedAt: String(Date.now()) };
+    work(call("saveMatch", { record: d }), btn).then(function () { put(matches, d); ideas.saved[it.id] = true; render(); }).catch(function () {});
+  }
+
+  /* ---------- reading a resume, no AI: Google gives the words, these rules sort them by label ---------- */
+  function fileBase64(file) {
+    return new Promise(function (res, rej) {
+      var r = new FileReader();
+      r.onload = function () { res(String(r.result).split(",")[1] || ""); };
+      r.onerror = rej; r.readAsDataURL(file);
+    });
+  }
+  function photoBase64(file) {   // a phone photo is shrunk to 2200px so it uploads quickly and still reads clearly
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 2200 / Math.max(img.naturalWidth, img.naturalHeight, 1)), c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL("image/jpeg", 0.9).split(",")[1] || "");
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(); };
+      img.src = url;
+    });
+  }
+  function labelKind(label) {
+    var l = String(label).toLowerCase().replace(/[^a-z' ]/g, " ").replace(/\s+/g, " ").trim();
+    if (!l || l.length > 45) return "";
+    if (/reference|shadchan|inquir/.test(l)) return "references";
+    if (/^(full |hebrew |english )?name$|^(boy|girl|bochur|bachur)'?s? name$/.test(l)) return "name";
+    if (/birth|^d ?o ?b$|^born$/.test(l)) return "dob";
+    if (/^age$/.test(l)) return "age";
+    if (/height/.test(l)) return "height";
+    if (/father|mother|parent|sibling|brother|sister|family|grand|shul|^rav$|^rov$|rabbi|in ?laws|mechut|machut|maiden/.test(l)) return "family";
+    if (/looking for|seeking|search of|preference|ideal/.test(l)) return "lookingFor";
+    if (/school|yeshiva|mesivta|mesifta|seminary|medrash|midrash|college|university|education|elementary|degree|kollel|camp|bais yaakov|beis yaakov|bais yaakov/.test(l)) return "education";
+    if (/occupation|current|work|job|profession|employ|career|plans/.test(l)) return "occupation";
+    if (/address|location|lives|city|residen|home ?town|^from$|neighborhood/.test(l)) return "city";
+    if (/phone|cell|mobile|^tel|email|e mail|contact/.test(l)) return "phone";
+    if (/hashkaf|affiliation|^type$|religious/.test(l)) return "hashkafa";
+    if (/background|minhag|nusach|ashkenaz|sephard|sefard|chassid|yichus/.test(l)) return "background";
+    if (/status|marital/.test(l)) return "marital";
+    if (/about|descri|personal|hobb|interest|middos|summary|character/.test(l)) return "notes";
+    return "";
+  }
+  function parseDob(v) {
+    var pad = function (n) { return String(n).padStart(2, "0"); }, now = new Date().getFullYear();
+    var m = String(v).match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/), y, mo, d;
+    if (m) { mo = +m[1]; d = +m[2]; y = +m[3]; if (y < 100) y += y > now % 100 ? 1900 : 2000; }
+    else {
+      m = String(v).match(/([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/);
+      if (!m) return "";
+      mo = "janfebmaraprmayjunjulaugsepoctnovdec".indexOf(m[1].slice(0, 3).toLowerCase()) / 3 + 1; d = +m[2]; y = +m[3];
+    }
+    if (mo % 1 || mo < 1 || mo > 12 || d < 1 || d > 31 || y < 1930 || y > now) return "";
+    return y + "-" + pad(mo) + "-" + pad(d);
+  }
+  function cityOf(v) {
+    var parts = String(v).split(",").map(function (p) { return p.trim(); }), i;
+    for (i = 1; i < parts.length; i++) {
+      var st = parts[i].match(/^([A-Z]{2})\b/);
+      if (st) return parts[i - 1] + ", " + st[1];
+    }
+    return String(v).trim();
+  }
+  function parseResume(text) {
+    var out = {}, loose = [], sec = "";
+    var add = function (k, v) { v = String(v || "").trim(); if (v) out[k] = out[k] ? out[k] + "\n" + v : v; };
+    var place = function (k, label, value) {
+      if (k === "name") { if (!out.name && value) out.name = value; }
+      else if (k === "dob") { var d = parseDob(value); if (d) out.dob = d; else add("notes", "Born: " + value); var a = value.match(/\b(?:age\s*)?(\d{2})\s*(?:years|yrs)\b/i); if (a) out.age = a[1]; }
+      else if (k === "age") { var g = value.match(/\d{2}/); if (g) out.age = g[0]; }
+      else if (k === "height") { if (value) out.height = value; }
+      else if (k === "city") { if (value && !out.city) out.city = cityOf(value); }
+      else if (k === "marital") { if (/divorc/i.test(value)) out.marital = "divorced"; else if (/widow/i.test(value)) out.marital = "widowed"; }
+      else if (k === "family" || k === "education") add(k, label ? label + ":" + (value ? " " + value : "") : value);
+      else add(k, value);
+    };
+    String(text).replace(/\r/g, "").split("\n").forEach(function (raw) {
+      var line = raw.replace(/[‎‏\t]+/g, " ").replace(/\s+/g, " ").trim();
+      if (!line || /^(bs"?d|b"?h|בס"ד|ב"ה|resume|profile)$/i.test(line)) return;
+      var title = line.match(/^shidduch (?:resume|profile)(?:\s+(?:of|for)\s+(.+))?$/i);
+      if (title) { if (title[1] && !out.name) out.name = title[1].trim(); return; }
+      if (sec === "references" && /\d{3}\D{0,2}\d{4}/.test(line)) { add("references", line); return; }
+      var m = line.match(/^(.{2,45}?)\s*(?::|\s[-–—]\s)\s*(.*)$/), k = m ? labelKind(m[1]) : "";
+      if (m && k) { sec = k; place(k, m[1].trim(), m[2].trim()); return; }
+      var hk = line.length <= 40 && line.split(" ").length <= 4 && !/\d/.test(line) ? labelKind(line) : "";
+      if (hk && hk !== "name") { sec = hk; return; }
+      if (sec === "family" || sec === "education" || sec === "references" || sec === "lookingFor" || sec === "notes") { place(sec, "", line); return; }
+      loose.push(line);
+    });
+    if (!out.name) {
+      for (var i = 0; i < loose.length; i++) {
+        if (/^[A-Za-z][A-Za-z'’.\- ]+$/.test(loose[i]) && loose[i].split(" ").length >= 2 && loose[i].split(" ").length <= 4) { out.name = loose.splice(i, 1)[0]; break; }
+      }
+    }
+    if (loose.length) add("notes", loose.join("\n"));
+    var t = String(text);
+    if (!out.age && !out.dob) { var ag = t.match(/\bage\D{0,3}(\d{2})\b/i); if (ag) out.age = ag[1]; }
+    if (!out.height) { var h = t.match(/\b([4-6])\s*['’′]\s*(\d{1,2})\s*(?:"|”|″|'')?/); if (h) out.height = h[1] + "'" + h[2] + '"'; }
+    var fem = (t.match(/seminary|bais yaakov|beis yaakov|bnos|\bshe\b|\bher\b|daughter of/gi) || []).length;
+    var mal = (t.match(/mesivta|mesifta|bais medrash|beis medrash|bochur|bachur|\bhe\b|\bhis\b|son of|chavrusa/gi) || []).length;
+    if (fem > mal) out.gender = "f"; else if (mal > fem) out.gender = "m";
+    if (/\bis a kohen\b|\bkohen\s*:\s*yes\b/i.test(t)) out.kohen = true;
+    return out;
+  }
+
+  /* ---------- test people ---------- */
+  function portrait(k, bg, skin, hair, cloth, head, beard, kc) {
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><rect width="400" height="400" fill="' + bg + '"/>';
+    if (k === "f") s += '<path d="M112 195 C100 70 300 70 288 195 L298 318 C262 338 138 338 102 318 Z" fill="' + hair + '"/>';
+    s += '<path d="M50 400 C50 318 124 296 200 296 C276 296 350 318 350 400 Z" fill="' + cloth + '"/><rect x="174" y="238" width="52" height="74" rx="22" fill="' + skin + '"/>';
+    s += k === "m" ? '<path d="M160 298 L200 346 L240 298 L226 292 L200 318 L174 292 Z" fill="#FFFFFF"/>' : '<path d="M150 300 C170 318 230 318 250 300 L250 312 C230 330 170 330 150 312 Z" fill="' + cloth + '"/>';
+    s += '<ellipse cx="200" cy="182" rx="72" ry="84" fill="' + skin + '"/>';
+    if (beard) s += '<path d="M130 196 C134 292 266 292 270 196 C254 246 146 246 130 196 Z" fill="' + hair + '"/>';
+    s += k === "m" ? '<path d="M128 176 C122 92 278 92 272 176 C252 134 148 134 128 176 Z" fill="' + hair + '"/>' : '<path d="M126 178 C128 96 272 96 274 178 C246 128 176 122 126 178 Z" fill="' + hair + '"/>';
+    if (head === "kippah") s += '<path d="M146 116 C160 76 240 76 254 116 C226 104 174 104 146 116 Z" fill="' + kc + '"/>';
+    if (head === "hat") s += '<path d="M138 120 C136 40 264 40 262 120 Z" fill="#1B1B1F"/><ellipse cx="200" cy="120" rx="116" ry="15" fill="#1B1B1F"/><rect x="138" y="100" width="124" height="12" fill="#34343B"/>';
+    s += '<circle cx="174" cy="184" r="6" fill="#2B2420"/><circle cx="226" cy="184" r="6" fill="#2B2420"/><path d="M178 220 Q200 238 222 220" stroke="#8A4A3A" stroke-width="4" stroke-linecap="round" fill="none"/>';
+    s += '<rect x="0" y="362" width="400" height="38" fill="#000000" fill-opacity="0.5"/><text x="200" y="388" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" letter-spacing="4" fill="#FFFFFF">SAMPLE</text></svg>';
+    return "data:image/svg+xml;base64," + btoa(s);
+  }
+  function testPdf(lines) {   // a tiny one-page PDF, written by hand, for the test people
+    var wrapped = [];
+    lines.forEach(function (l) {
+      l = String(l).replace(/[^\x20-\x7e]/g, "?");
+      while (l.length > 84) { var cut = l.lastIndexOf(" ", 84); if (cut < 20) cut = 84; wrapped.push(l.slice(0, cut)); l = "    " + l.slice(cut).trim(); }
+      wrapped.push(l);
+    });
+    var body = "BT 60 730 Td 17 TL " + wrapped.map(function (l, i) { return (i === 0 ? "/F1 20 Tf " : i === 1 ? "/F1 11 Tf " : "") + "(" + l.replace(/[\\()]/g, "\\$&") + ") Tj T*"; }).join(" ") + " ET";
+    var objs = ["<< /Type /Catalog /Pages 2 0 R >>", "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+      "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+      "<< /Length " + body.length + " >>\nstream\n" + body + "\nendstream", "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"];
+    var out = "%PDF-1.4\n", offs = [];
+    objs.forEach(function (o, i) { offs.push(out.length); out += (i + 1) + " 0 obj\n" + o + "\nendobj\n"; });
+    var x = out.length;
+    return out + "xref\n0 6\n0000000000 65535 f \n" + offs.map(function (o) { return String(o).padStart(10, "0") + " 00000 n \n"; }).join("") + "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n" + x + "\n%%EOF";
+  }
+  function seedTest(btn) {
+    var now = String(Date.now());
+    function P(id, name, g, dob, age, city, marital, kohen, height, hashkafa, background, family, education, occupation, lookingFor, lo, hi, notes) {
+      return { id: id, name: "TEST " + name, gender: g, dob: dob, age: age, ageYear: age ? String(new Date().getFullYear()) : "", city: city, status: "available", marital: marital, kohen: kohen,
+        height: height, hashkafa: hashkafa, background: background, family: family, education: education, occupation: occupation, lookingFor: lookingFor, ageMin: lo, ageMax: hi,
+        references: "", phone: "", notes: "Test profile. " + notes, createdAt: now, updatedAt: now };
+    }
+    var people = [
+      P("test-01", "Yosef Adler", "m", "2002-03-14", "", "Lakewood, NJ", "single", false, "5'10\"", "Yeshivish", "Ashkenazi", "Father is a rebbi, mother teaches. Fourth of seven.", "Mesivta in Lakewood, Brisk, now BMG", "Learning full time", "Wants a kollel life for at least five years. Calm and kind.", "20", "23", "Serious learner, quiet, good sense of humor."),
+      P("test-02", "Dovid Kahn", "m", "1998-11-02", "", "Brooklyn, NY", "single", true, "5'8\"", "Yeshivish, working", "Ashkenazi", "Father is an accountant. Oldest of five. Flatbush.", "Chaim Berlin, Touro", "Accountant, has a night seder", "Warm, outgoing, wants a Torah home with a working husband.", "23", "29", "He is a kohen. Very personable, involved in chesed."),
+      P("test-03", "Avi Rosenberg", "m", "", "27", "Teaneck, NJ", "single", false, "6'0\"", "Modern Orthodox, machmir", "Ashkenazi", "Both parents are physicians. Second of three.", "TABC, Gush, YU, medical school", "Medical resident", "Bright, growth oriented. Wants to make aliyah one day.", "23", "27", "Thoughtful, learns chavrusa twice a week."),
+      P("test-04", "Shmuel Weiss", "m", "2001-07-20", "", "Monsey, NY", "single", false, "5'7\"", "Heimish, Chassidish background", "Hungarian Chassidish family", "Father has a hardware business. Sixth of nine.", "Chassidish yeshivos in Monsey", "Family business, learns mornings", "Heimish girl, family minded. Monsey or Brooklyn.", "19", "23", "Gentle, hardworking, close with his family."),
+      P("test-05", "Eli Mizrahi", "m", "", "31", "Deal, NJ", "divorced", false, "5'9\"", "Sephardic, traditional yeshivish", "Syrian Sephardi", "Large community family. Third of six.", "Community yeshiva, some college", "Real estate", "Sephardic or open to it, warm. Fine with someone previously married.", "25", "32", "Divorced after a short marriage, no children."),
+      P("test-06", "Rivka Stern", "f", "2004-05-09", "", "Lakewood, NJ", "single", false, "5'4\"", "Yeshivish", "Ashkenazi", "Father learns in kollel, mother is a nurse. Second of eight.", "Bais Yaakov, BJJ", "Preschool morah", "A serious ben Torah who plans to learn long term.", "22", "26", "Sweet, capable, wants to support a kollel home."),
+      P("test-07", "Chana Friedman", "f", "2000-09-25", "", "Brooklyn, NY", "single", false, "5'5\"", "Yeshivish, with a working husband in mind", "Ashkenazi", "Father is a lawyer. Third of four. Flatbush.", "Bais Yaakov, seminary, OT degree", "Occupational therapist", "A working boy who is serious about learning. Outgoing, a mentch.", "25", "30", "Lively, organized, runs a Shabbos group."),
+      P("test-08", "Tamar Levine", "f", "", "25", "Riverdale, NY", "single", false, "5'6\"", "Modern Orthodox, machmir", "Ashkenazi", "Father is a professor, mother is a principal. Oldest of three.", "SAR, Migdal Oz, Stern, law school", "Attorney", "Intellectual, committed to learning. Would love to make aliyah.", "25", "30", "Sharp, warm, gives a weekly shiur."),
+      P("test-09", "Malky Gross", "f", "2005-01-17", "", "Brooklyn, NY", "single", false, "5'3\"", "Heimish", "Chassidish family, Boro Park", "Father is in the diamond business. Fifth of ten.", "Chassidish girls school, local seminary", "School secretary", "Heimish boy, a baal middos. Brooklyn or Monsey.", "21", "25", "Cheerful, great with children."),
+      P("test-10", "Sarah Dweck", "f", "", "28", "Brooklyn, NY", "divorced", false, "5'5\"", "Sephardic, yeshivish leaning", "Syrian Sephardi", "Well known community family. Second of five.", "Community girls school, design degree", "Interior designer", "Kind, stable, family oriented. Sephardic preferred.", "28", "36", "Divorced, no children. Gracious.")
+    ];
+    var years = { "test-01": "5-7", "test-06": "5-7", "test-04": "1-3", "test-09": "1-3", "test-03": "1-3", "test-07": "3-5" };
+    people.forEach(function (p) { p.learnYears = years[p.id] || ""; });
+    var pics = {
+      "test-01": portrait("m", "#DCE6F5", "#F0C9A8", "#3A2A20", "#1F2937", "hat", 0, ""), "test-02": portrait("m", "#E6EEDD", "#E9BE9C", "#2A1D16", "#27364F", "kippah", 1, "#14213D"),
+      "test-03": portrait("m", "#F3E7D3", "#F2CFB2", "#5A3D28", "#3B5B7A", "kippah", 0, "#7A5C3A"), "test-04": portrait("m", "#E9E1F0", "#EFC6A4", "#6B3F22", "#1F2937", "hat", 1, ""),
+      "test-05": portrait("m", "#DDEDEA", "#D9A77E", "#16110E", "#2F3E46", "kippah", 1, "#1B1B1F"), "test-06": portrait("f", "#F5E3E0", "#F2CFB2", "#4A3024", "#2E4A62", "", 0, ""),
+      "test-07": portrait("f", "#E3ECF5", "#EFC6A4", "#2A1D16", "#6B3F5B", "", 0, ""), "test-08": portrait("f", "#EAF1DF", "#F0C9A8", "#7A4B26", "#2F5D50", "", 0, ""),
+      "test-09": portrait("f", "#F4EBD6", "#F3D3B8", "#A0522D", "#3D3A6B", "", 0, ""), "test-10": portrait("f", "#E8E2F2", "#DDAE86", "#17110D", "#7A2E3A", "", 0, "")
+    };
+    var resumes = {};
+    people.forEach(function (p) {
+      resumes[p.id] = btoa(testPdf([p.name.replace(/^TEST /, ""), "Shidduch Resume  (TEST - not a real person)", "",
+        "Date of birth: " + (p.dob || "not given") + (p.age ? "     Age: " + p.age : ""), "Height: " + p.height, "Address: " + p.city, "",
+        "Hashkafa: " + p.hashkafa, "Background: " + p.background, "", "Family: " + p.family, "",
+        "Education: " + p.education, "Currently: " + p.occupation, "", "Looking for: " + p.lookingFor, "",
+        "References", "Rabbi Test Reference   732-555-0100", "Mrs. Test Reference   718-555-0101"]));
+      p.resume = "application/pdf";
+    });
+    work(call("bulk", { singles: people, photos: pics, resumes: resumes }), btn).then(function (r) { singles = r.data.singles; matches = r.data.matches; photos = r.photos || photos; render(); }).catch(function () {});
+  }
+
+  /* ---------- wiring ---------- */
+  function setTab(t) {
+    ["singles", "matches", "mine", "ideas"].forEach(function (x) { $("p-" + x).hidden = x !== t; });
+    document.querySelectorAll(".tabs button").forEach(function (b) { if (b.dataset.tab === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll(".tabs button").forEach(function (b) { b.addEventListener("click", function () { setTab(b.dataset.tab); }); });
+  document.querySelectorAll(".seg button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      gFilter = b.dataset.g;
+      document.querySelectorAll(".seg button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      renderSingles();
+    });
+  });
+  $("lightbox").addEventListener("click", function () { $("lightbox").hidden = true; $("lightImg").removeAttribute("src"); });
+  $("q").addEventListener("input", renderSingles);
+  $("mineQ").addEventListener("input", renderMine);
+  $("fStatus").addEventListener("change", function () { renderStatusFilter(); renderSingles(); });
+  $("fStage").addEventListener("change", renderMatches);
+  $("addSingle").addEventListener("click", function () { if (loaded) openSingleForm(null); });
+  $("addIdea").addEventListener("click", function () { if (loaded) openMatchForm(null, null, "idea"); });
+  $("addMatch").addEventListener("click", function () { if (loaded) openMatchForm(null); });
+  $("sheetBack").addEventListener("click", function () { if (sheet && sheet.type === "list" && sheet.id && bigList.text) showList(bigList.text); else if (sheet && (sheet.type === "single" || sheet.type === "resume") && sheet.id) openDetail(sheet.id); else closeSheet(); });
+  $("ideaGo").addEventListener("click", runIdeas);
+  $("ideaFor").addEventListener("change", function () { ideas = null; renderIdeas(); });
+  $("refresh").addEventListener("click", function () { if (!busy && PASS) loadAll(); });
+  $("acct").addEventListener("click", function () { if (PASS) openAccount(); });
+  $("list").addEventListener("click", function () { if (PASS && loaded) openList(); });
+  $("settings").addEventListener("click", function () { if (PASS) openSettings(); });
+
+
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && LIVE && PASS && !newer) send({ action: "status" }).then(function (r) { checkBuild(r.build); }, function () {});
+    var editing = sheet && sheet.type !== "detail";
+    if (!document.hidden && PASS && loaded && !busy && !pending && !editing && Date.now() - lastLoad > 60000) loadAll(true);
+  });
+
+  /* ---------- start ---------- */
+  renderLearnFilter();
+  renderGroupFilter();
+  renderStatusFilter();
+  if (!LIVE) { PASS = "preview"; ME = "preview"; loadAll(); }
+  else {
+    var saved = /^[a-f0-9]{64}$/.test(URLKEY) ? URLKEY : "";   // opened from a saved private link
+    if (!saved) { try { saved = localStorage.getItem(KEEP) || ""; } catch (e) {} }
+    if (!saved) showGate("in");
+    else {
+      PASS = saved;
+      var boot = null;
+      try { boot = JSON.parse($("boot").textContent); } catch (e) {}
+      loadAll(false, boot && boot.ok && boot.data && saved === URLKEY ? boot : null);
+    }
+
+  }
+})();
+</script>
+</body>
+</html>
