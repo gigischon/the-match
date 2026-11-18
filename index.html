@@ -295,11 +295,41 @@ html.nl .pill.ended, html.nl .pill.closed { background: #F6E3E3; color: #A23B3B;
 html.nl .tabs { background: #FAF7F0; border-top: 1px solid #E9E2D3; }
 html.nl .tabs button { color: #A89F8A; border-top-color: transparent; font-weight: 500; }
 html.nl .tabs button[aria-current="page"] { color: #1B2A4E; font-weight: 700; border-top-color: transparent; }
+/* new look, the top: the logo beside the name, and one menu button in place of the four small ones */
+.menubtn, .menupop { display: none; }
+html.nl .top { position: sticky; top: 0; z-index: 12; }
+html.nl .topin h1 .mark { display: block !important; width: 1.2em; height: auto; margin-right: 9px; color: #1B2A4E; }
+html.nl .topin #refresh, html.nl .topin #list, html.nl .topin #acct, html.nl .topin #settings { display: none !important; }
+html.nl .menubtn { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 46px; height: 46px; padding: 0; border-radius: 15px; cursor: pointer;
+  background: #FFFFFF; border: 1px solid #E9E2D3; box-shadow: 0 1px 2px rgba(60, 50, 20, .05), 0 6px 14px rgba(60, 50, 20, .07); transition: transform .12s ease, box-shadow .15s ease; }
+html.nl .menubtn span { display: block; height: 2px; border-radius: 2px; background: #1B2A4E; transition: transform .18s ease, width .18s ease; }
+html.nl .menubtn span:first-child { width: 20px; }
+html.nl .menubtn span:last-child { width: 13px; margin-right: 7px; background: #B8964A; }
+html.nl .menubtn:active { transform: scale(.94); }
+html.nl .menubtn[aria-expanded="true"] span:first-child { transform: translateY(3.5px) rotate(45deg); }
+html.nl .menubtn[aria-expanded="true"] span:last-child { width: 20px; margin-right: 0; background: #1B2A4E; transform: translateY(-3.500px) rotate(-45deg); }
+html.nl .menupop { display: flex; flex-direction: column; gap: 2px; position: absolute; z-index: 13; right: max(12px, calc((100vw - 720px) / 2 + 12px)); top: calc(100% - 6px); width: min(290px, calc(100vw - 24px)); padding: 8px;
+  background: rgba(255, 255, 255, .96); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid #EFE9DC; border-radius: 20px; box-shadow: 0 2px 6px rgba(60, 50, 20, .06), 0 18px 44px rgba(27, 42, 78, .18);
+  transform-origin: top right; animation: menuin .16s ease; }
+html.nl .menupop[hidden] { display: none; }
+@keyframes menuin { from { opacity: 0; transform: scale(.94) translateY(-6px); } to { opacity: 1; transform: none; } }
+html.nl .menupop button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 10px; border: 0; border-radius: 14px; background: transparent; cursor: pointer; text-align: left; color: #1B2A4E; }
+html.nl .menupop button:active, html.nl .menupop button:hover { background: #F6F2E9; }
+html.nl .menupop .mi { flex: none; width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; }
+html.nl .menupop .mi svg { width: 21px; height: 21px; }
+html.nl .menupop .m1 { background: #E6EDF8; color: #2D4A8A; }
+html.nl .menupop .m2 { background: #E4F1E8; color: #2F7A45; }
+html.nl .menupop .m3 { background: #F8E6EA; color: #A2415A; }
+html.nl .menupop .m4 { background: #F6EEDC; color: #8E6E1E; }
+html.nl .menupop .mt { display: flex; flex-direction: column; min-width: 0; }
+html.nl .menupop .mt b { font-weight: 600; font-size: .95rem; }
+html.nl .menupop .mt i { font-style: normal; font-size: .76rem; color: #8C8472; }
+@media (prefers-reduced-motion: reduce) { html.nl .menupop { animation: none; } }
 </style>
 </head>
 <body>
 <div id="splash" class="splash" aria-hidden="true"><svg class="sp-mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#F7F3EC" stroke-width="20"/></svg><div class="sp-the">The</div><div class="sp-name">Match</div></div>
-<header class="top"><div class="wrap topin"><h1><svg class="mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="currentColor" stroke-width="20"/></svg><span class="t1">The </span><span class="t2">Match</span></h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button></div></div></header>
+<header class="top"><div class="wrap topin"><h1><svg class="mark" viewBox="298 220 428 280" aria-hidden="true"><path d="M328 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="#C9B487" stroke-width="20"/><path d="M456 490V360a120 120 0 0 1 240 0v130" fill="none" stroke="currentColor" stroke-width="20"/></svg><span class="t1">The </span><span class="t2">Match</span></h1><div><span id="summary" hidden></span><span id="sync" role="status"></span><button type="button" id="night" aria-pressed="false" hidden>Night</button><button type="button" class="btn small round" id="refresh" aria-label="Refresh" title="Refresh">&#8635;</button><button type="button" class="btn small" id="list">List</button><button type="button" class="btn small" id="acct">Account</button><button type="button" class="btn small round" id="settings" aria-label="Settings" title="Settings">&#9881;&#65038;</button><button type="button" id="menuBtn" class="menubtn" aria-label="Menu" aria-expanded="false"><span></span><span></span></button></div></div><div id="menuPop" class="menupop" hidden><button type="button" data-go="list"><span class="mi m1"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13c3.600-.2 6.200.4 8 1.700'/><path d='M12 6.5c1.800-1.300 4.400-1.900 8-1.700v13c-3.600-.2-6.200.4-8 1.700'/><path d='M12 6.500v13'/></svg></span><span class="mt"><b>The List</b><i>The full book, with search</i></span></button><button type="button" data-go="refresh"><span class="mi m2"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 11a8 8 0 0 0-14.3-4.3L4 8.5'/><path d='M4 4v4.5h4.5'/><path d='M4 13a8 8 0 0 0 14.3 4.3l1.7-1.8'/><path d='M20 20v-4.5h-4.5'/></svg></span><span class="mt"><b>Refresh</b><i>Get the latest from Google</i></span></button><button type="button" data-go="acct"><span class="mi m3"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='8.500' r='3.700'/><path d='M4.800 20c.7-3.700 3.600-5.700 7.200-5.700s6.500 2 7.200 5.700'/></svg></span><span class="mt"><b>Account</b><i>Sign-in and sharing</i></span></button><button type="button" data-go="settings"><span class="mi m4"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1'/><circle cx='15' cy='7' r='2'/><circle cx='9' cy='12' r='2'/><circle cx='17' cy='17' r='2'/></svg></span><span class="mt"><b>Settings</b><i>Display, groups, your list</i></span></button></div></header>
 <div id="note" class="wrap note" hidden><div id="noteText"></div></div>
 <div id="update" class="wrap note" hidden><div>A newer version of The Match is ready. <a id="updateGo" target="_top" href="#">Tap here to update</a></div></div>
 
@@ -539,7 +569,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 61, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 62, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -2303,6 +2333,15 @@ setTimeout(function () {
   homeBtn.setAttribute("role", "button"); homeBtn.setAttribute("tabindex", "0"); homeBtn.setAttribute("aria-label", "The Match, back to the start"); homeBtn.style.cursor = "pointer";
   homeBtn.addEventListener("click", goHome);
   homeBtn.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goHome(); } });
+  /* New look: the four buttons at the top are gathered into one menu button; each row presses the button it stands for. */
+  function menuShow(on) { $("menuPop").hidden = !on; $("menuBtn").setAttribute("aria-expanded", on ? "true" : "false"); }
+  $("menuBtn").addEventListener("click", function (e) { e.stopPropagation(); if (PASS) menuShow($("menuPop").hidden); });
+  $("menuPop").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button[data-go]") : null; if (!b) return;
+    menuShow(false); $(b.getAttribute("data-go")).click();
+  });
+  document.addEventListener("click", function (e) { if (!$("menuPop").hidden && !$("menuPop").contains(e.target)) menuShow(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") menuShow(false); });
   $("refresh").addEventListener("click", function () { if (!busy && PASS) loadAll(); });
   $("acct").addEventListener("click", function () { if (PASS) openAccount(); });
   $("list").addEventListener("click", function () { if (PASS && loaded) openList(); });
