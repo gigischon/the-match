@@ -397,6 +397,10 @@ html.nl .tabs button { min-height: 44px; padding: 9px 4px; border-radius: 999px;
 html.nl .tabs button:active { transform: scale(.96); }
 html.nl .tabs button[aria-current="page"] { color: #FFFFFF; font-weight: 700; border-color: #4E8BDD;
   background: linear-gradient(180deg, #7FADF0 0%, #4E8BDD 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 4px 12px rgba(78, 139, 221, .34); }
+/* the List and Settings pictures at the top: a full-size place to press */
+html.nl .topin #list, html.nl .topin #settings { width: 44px; height: 44px; min-height: 44px; }
+html.nl .topin > div { gap: 4px; }
+@media (max-width: 520px) { html.nl .topin #list, html.nl .topin #settings { width: 42px; } html.nl .topin > div { gap: 3px; } }
 </style>
 </head>
 <body>
@@ -442,8 +446,7 @@ html.nl .tabs button[aria-current="page"] { color: #FFFFFF; font-weight: 700; bo
         <option value="suggested">Suggested</option>
         <option value="checking">Looking into it</option>
         <option value="yes">Gave a yes</option>
-        <option value="dating">Dating</option>
-        <option value="middle">Dating, with the number of dates</option>
+        <option value="middle">Dating</option>
         <option value="ended">Ended</option>
         <option value="engaged">Engaged</option>
       </select>
@@ -642,7 +645,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 66, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 67, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1089,7 +1092,7 @@ setTimeout(function () {
       return;
     }
     var f = $("fStage").value;
-    var rows = matches.filter(function (m) { return m.stage === "idea" ? false : f === "" ? true : f === "open" ? OPEN.indexOf(m.stage) >= 0 : m.stage === f; })   // ideas not redt yet live under Ideas
+    var rows = matches.filter(function (m) { return m.stage === "idea" ? false : f === "" ? true : f === "open" ? OPEN.indexOf(m.stage) >= 0 : f === "middle" ? (m.stage === "middle" || m.stage === "dating") : m.stage === f; })   // ideas not redt yet live under Ideas
       .sort(function (a, b) { return (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0); });
     if (!rows.length) { box.append(el("div", { class: "empty" }, el("p", { text: "Nothing at this stage." }))); return; }
     rows.forEach(function (m) { box.append(matchRow(m)); });
@@ -1166,6 +1169,7 @@ setTimeout(function () {
         q.onupgradeneeded = function () { q.result.createObjectStore("f"); };
         q.onsuccess = function () { res(q.result); };
         q.onerror = q.onblocked = function () { res(null); };
+        setTimeout(function () { res(null); }, 2500);
       } catch (e) { res(null); }
     });
     return fileDb;
@@ -1608,7 +1612,7 @@ setTimeout(function () {
     var body = $("sheetBody"), msg = el("p", { class: "msg", text: "Opening your list…" });
     body.append(msg);
     var ready = bigList.text ? Promise.resolve(bigList.text)
-      : (LIVE ? fdo("readonly", function (st) { return st.get(fkey("~list-text")); }) : Promise.resolve(null)).then(function (hit) {
+      : (LIVE ? Promise.race([fdo("readonly", function (st) { return st.get(fkey("~list-text")); }), new Promise(function (res) { setTimeout(function () { res(null); }, 4000); })]) : Promise.resolve(null)).then(function (hit) {   // if the device does not answer, ask Google
           if (hit && hit.t) {   // shown at once from this device; Google is asked in the background whether the book has changed
             bigList.text = hit.t;
             listTextFromGoogle().then(function (t) {
@@ -2053,7 +2057,7 @@ setTimeout(function () {
     var mSel = personSelect("m-m", "m", m ? m.m : pre && pre.gender === "m" ? pre.id : "", !!m);
     var fSel = personSelect("m-f", "f", m ? m.f : pre && pre.gender === "f" ? pre.id : "", !!m);
     var stage = el("select", { id: "m-stage" });
-    Object.keys(STAGE).forEach(function (k) { stage.append(el("option", { value: k, text: STAGE[k] })); });
+    Object.keys(STAGE).forEach(function (k) { if (k === "dating" && !(m && m.stage === "dating")) return; stage.append(el("option", { value: k, text: STAGE[k] })); });   // one Dating choice; the older one shows only on a shidduch that still has it
     stage.value = m && STAGE[m.stage] ? m.stage : (firstStage || "suggested");
     var follow = el("input", { id: "m-follow", type: "date", value: m ? m.followUp || "" : "" });
     var notes = el("textarea", { id: "m-notes", value: m ? m.notes || "" : "", placeholder: "Who you spoke to, what each side said, what is next" });
@@ -2472,7 +2476,7 @@ setTimeout(function () {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") menuShow(false); });
   $("refresh").addEventListener("click", function () { if (!busy && PASS) loadAll(); });
   $("acct").addEventListener("click", function () { if (PASS) openAccount(); });
-  $("list").addEventListener("click", function () { if (PASS && loaded) openList(); });
+  $("list").addEventListener("click", function () { if (!PASS) return; if (loaded) openList(); else toast("Still loading. Try again in a moment."); });
   $("settings").addEventListener("click", function () { if (PASS) openSettings(); });
 
 
