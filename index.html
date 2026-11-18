@@ -674,7 +674,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 75, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 76, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1731,6 +1731,7 @@ setTimeout(function () {
         info.textContent = hits.length ? (r.names ? r.names + " with that name" : "Nobody has that name; " + r.others + " have it in their other details") + (hits.length < (r.names || r.others) ? ". Showing the first " + hits.length + "." : ".") : "Nobody in the list matches that.";
         hits.forEach(function (c) {
           c.boxes = !!r.boxes;
+          if (c.boxes && hits.indexOf(c) < 6) boxImage(c.i).catch(function () {});
           var rest = c.t.indexOf(c.n) === 0 ? c.t.slice(c.n.length) : c.t;
           out.append(el("button", { type: "button", class: "row", onclick: function () { showQuickCard(c); } },
             el("div", { class: "rb" }, el("div", { class: "nm", text: c.n }), el("div", { class: "sub", text: rest.trim().slice(0, 110) + " …" }))));
@@ -1877,6 +1878,8 @@ setTimeout(function () {
         out.append(el("button", { type: "button", class: "row", onclick: function () { showCard(t, i); } },
           el("div", { class: "rb" }, el("div", { class: "nm", text: c.n }), el("div", { class: "sub", text: rest.trim().slice(0, 110) + " …" }))));
       });
+      clearTimeout(bigList.ahead);
+      if (t.boxes && LIVE) bigList.ahead = setTimeout(function () { hits.slice(0, 6).forEach(function (i) { boxImage(i).catch(function () {}); }); }, 600);
       if (!wide && byText.length) out.append(el("button", { type: "button", class: "btn", text: "Also show " + byText.length + " who have that in their other details", onclick: function () { bigList.wideQ = text; run(); } }));
     };
     q.addEventListener("input", run); run();
@@ -1919,8 +1922,8 @@ setTimeout(function () {
   /* Each person's box is also kept as its own small picture, so showing one person does not need the whole book. */
   function boxImage(i) {
     bigList.box = bigList.box || {};
-    if (bigList.box[i]) return Promise.resolve(bigList.box[i]);
-    return send({ action: "getList", token: PASS, part: "b" + i }).then(function (r) { bigList.box[i] = "data:image/jpeg;base64," + r.data; return bigList.box[i]; });
+    if (!bigList.box[i]) bigList.box[i] = send({ action: "getList", token: PASS, part: "b" + i }).then(function (r) { return "data:image/jpeg;base64," + r.data; }, function (e) { delete bigList.box[i]; throw e; });
+    return bigList.box[i];
   }
   /* Done once for each List, on a computer: every box is cut out of the book and stored on its own. */
   async function makeBoxes(t, say) {
