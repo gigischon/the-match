@@ -415,6 +415,7 @@ html.nl main { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
 .picks button small { display: block; color: var(--muted); font-size: .82rem; }
 .picks button[aria-pressed="true"] { background: var(--accent-soft); }
 .picks .none { margin: 0; padding: 10px 12px; color: var(--muted); }
+.qcard { white-space: pre-wrap; line-height: 1.55; margin-top: 12px; }
 </style>
 </head>
 <body>
@@ -660,7 +661,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 71, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 72, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -1665,6 +1666,7 @@ setTimeout(function () {
     openSheet("List", "list", null);
     var body = $("sheetBody"), msg = el("p", { class: "msg", text: "Opening your list…" });
     body.append(msg);
+    var quick = false;
     var ready = bigList.text ? Promise.resolve(bigList.text)
       : (LIVE ? Promise.race([fdo("readonly", function (st) { return st.get(fkey("~list-text")); }), new Promise(function (res) { setTimeout(function () { res(null); }, 4000); })]) : Promise.resolve(null)).then(function (hit) {   // if the device does not answer, ask Google
           if (hit && hit.t) {   // shown at once from this device; Google is asked in the background whether the book has changed
@@ -1676,17 +1678,67 @@ setTimeout(function () {
             }, function () {});
             return hit.t;
           }
+          quick = true; showQuick();   // a search bar straight away, answered by Google, while the List comes onto this device in the background
           return listTextFromGoogle().then(function (t) { bigList.text = t; keepListText(t); return t; });
         });
-    ready.then(function (t) { if (sheet && sheet.type === "list") showList(t); }, function (e) {
+    ready.then(function (t) {
+      if (!sheet || sheet.type !== "list" || sheet.id) return;   // reading one person: the full List is used from the next search on
+      var typing = document.activeElement && document.activeElement.id === "quickQ";
+      showList(t); if (typing && $("listQ")) { $("listQ").focus(); try { $("listQ").setSelectionRange(9999, 9999); } catch (x) {} }
+    }, function (e) {
       if (!sheet || sheet.type !== "list") return;
+      if (quick && !(e && (e.error === "signin" || e.error === "noresume"))) return;   // searching through Google still works; leave it on screen
+      body.textContent = ""; body.append(msg);
       if (e && e.error === "signin") { oops(e); return; }
       if (e && e.error === "noresume") {
         msg.textContent = "No list is stored yet. Choose the list PDF from this device. It is kept only in your account; nobody else who uses the app can see it.";
         body.append(el("div", { class: "acts" }, listPicker("Choose the list PDF", "btn primary")));
-      } else msg.textContent = "The list could not be opened. Check your connection, go back and try again. (Reason: " + String(e && (e.error || e.message) || "unknown") + (e && e.detail ? ", " + e.detail : "") + ")";
+      } else { body.append(el("div", { class: "acts" }, listPicker("Choose the list PDF again"))); msg.textContent = "The list could not be opened. Check your connection, go back and try again. (Reason: " + String(e && (e.error || e.message) || "unknown") + (e && e.detail ? ", " + e.detail : "") + ")"; }
     });
   }
+  /* Before the List is on this device: the search bar is there at once and Google does the searching, sending back only the people who match. */
+  function showQuick() {
+    sheet = { type: "list", id: null }; $("sheetTitle").textContent = "List";
+    var body = $("sheetBody"); body.textContent = "";
+    var q = el("input", { type: "search", id: "quickQ", placeholder: "Search the list: a name, a city, a yeshiva", "aria-label": "Search the list", value: bigList.q || "" });
+    var info = el("p", { class: "msg" }), out = el("div", { class: "list" }), turn = 0, timer = null;
+    body.append(el("div", { class: "tools" }, q), info, out, el("div", { class: "acts" }, listPicker("Replace the list")));
+    var here = function () { return sheet && sheet.type === "list" && !sheet.id && $("quickQ") === q; };
+    var run = function () {
+      var text = q.value.trim(), mine = ++turn;
+      bigList.q = q.value; out.textContent = "";
+      if (text.length < 2) { info.textContent = "Type a name, a city or a yeshiva."; return; }
+      info.textContent = "Searching…";
+      send({ action: "searchList", token: PASS, q: text }).then(function (r) {
+        if (mine !== turn || !here()) return;
+        var hits = r.hits || [];
+        info.textContent = hits.length ? (r.names ? r.names + " with that name" : "Nobody has that name; " + r.others + " have it in their other details") + (hits.length < (r.names || r.others) ? ". Showing the first " + hits.length + "." : ".") : "Nobody in the list matches that.";
+        hits.forEach(function (c) {
+          var rest = c.t.indexOf(c.n) === 0 ? c.t.slice(c.n.length) : c.t;
+          out.append(el("button", { type: "button", class: "row", onclick: function () { showQuickCard(c); } },
+            el("div", { class: "rb" }, el("div", { class: "nm", text: c.n }), el("div", { class: "sub", text: rest.trim().slice(0, 110) + " …" }))));
+        });
+      }, function (e) {
+        if (mine !== turn || !here()) return;
+        if (e && e.error === "signin") { oops(e); return; }
+        info.textContent = e && e.error === "noresume" ? "No list is stored yet. Use the button below to choose the list PDF." : "The search could not reach Google. Check your connection and try again. (Reason: " + String(e && e.error || "unknown") + ")";
+      });
+    };
+    q.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(run, 450); });
+    run();
+  }
+  function showQuickCard(c) {   // one person's details as words; the picture of their box needs the book on this device
+    sheet = { type: "list", id: "q" + c.i }; $("sheetTitle").textContent = c.n;
+    var body = $("sheetBody"); body.textContent = ""; $("sheet").scrollTop = 0;
+    body.append(el("div", { class: "acts" },
+      el("button", { type: "button", class: "btn", text: "Back to search", onclick: function () { if (bigList.text) showList(bigList.text); else showQuick(); } }),
+      el("button", { type: "button", class: "btn", text: "Show the box from the book", onclick: function () {
+        if (bigList.text && bigList.text.cards && bigList.text.cards[c.i]) showCard(bigList.text, c.i);
+        else toast("The book is still coming onto this device. Try again in a moment.");
+      } })),
+      el("p", { class: "qcard", text: c.t }));
+  }
+
   /* The button that takes a PDF from this device, reads its words for searching, and stores both. */
   function listPicker(label, cls) {
     var pick = el("input", { type: "file", accept: "application/pdf,.pdf", hidden: true, "aria-label": label });
@@ -2518,7 +2570,7 @@ setTimeout(function () {
   $("addSingle").addEventListener("click", function () { if (loaded) openSingleForm(null); });
   $("addIdea").addEventListener("click", function () { if (loaded) openMatchForm(null, null, "idea"); });
   $("addMatch").addEventListener("click", function () { if (loaded) openMatchForm(null); });
-  $("sheetBack").addEventListener("click", function () { if (sheet && sheet.type === "list" && sheet.id && bigList.text) showList(bigList.text); else if (sheet && (sheet.type === "single" || sheet.type === "resume") && sheet.id) openDetail(sheet.id); else closeSheet(); });
+  $("sheetBack").addEventListener("click", function () { if (sheet && sheet.type === "list" && sheet.id && bigList.text) showList(bigList.text); else if (sheet && sheet.type === "list" && sheet.id) showQuick(); else if (sheet && (sheet.type === "single" || sheet.type === "resume") && sheet.id) openDetail(sheet.id); else closeSheet(); });
   $("ideaGo").addEventListener("click", runIdeas);
   $("ideaFor").addEventListener("change", function () { ideas = null; renderIdeas(); });
   /* The name at the top is the way home: back to the opening view (Singles, Boys, nothing searched or filtered) and a
