@@ -102,8 +102,12 @@ input[type="file"] { max-width: 100%; }
 .chips .lbl { color: var(--muted); font-size: .9rem; flex: 1 1 100%; }
 .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 8px 14px; min-height: 42px; cursor: pointer; font-weight: 600; }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.import { background: var(--accent-soft); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.import strong { font-family: var(--display); font-size: 1.05rem; }
+.import { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; font-size: .82rem; max-width: 360px; margin-left: auto; }
+.import strong { font-size: .82rem; font-weight: 600; }
+.import .msg { font-size: .76rem; margin: 0; }
+.import input[type=file] { font-size: .78rem; }
+.photofld > span { font-size: 1.05rem; font-weight: 600; }
+.photofld input[type=file] { font-size: 1rem; }
 .rb { flex: 1; min-width: 0; }
 .av { flex: none; width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: var(--hold-soft); }
 .av.ph { display: inline-flex; align-items: center; justify-content: center; color: var(--hold); font-weight: 700; font-family: var(--display); font-size: 1.1rem; }
@@ -455,7 +459,7 @@ setTimeout(function () {
     chip("", "All");
     LEARN.forEach(function (v) { chip(v, v === "working" ? "Working" : v); });   // short labels (1-3, 3-5) so the whole row fits on a phone
   }
-  var BUILD = 53, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
+  var BUILD = 54, newer = false, newBuild = 0;   // the copy this device is showing; Google fills in the number
   var REMOTE = "https://script.google.com/macros/s/AKfycbwBaS_5ac4XO6qnFPzRaRcuHSfuNBxFd9Kx529sMjZP8JWDysI7KS37MYSqwLEIcOu87w/exec";   // empty in the Google page; the copy on its own web address has the address it sends requests to
   var LIVE = !!REMOTE || (typeof google !== "undefined" && google.script && google.script.run);
   var PASS = "", KEEP = "tm-key", ME = "", APP_URL = "", URLKEY = "__DEVICE_KEY__";   // PASS holds this device's sign-in key
@@ -625,6 +629,7 @@ setTimeout(function () {
   function showSync() { $("sync").textContent = pending ? "Saving…" : everSaved ? "Saved" : ""; }
   function call(action, extra) {
     var req = Object.assign({ action: action, token: PASS }, extra || {});
+    if (action === "readResume") return send(req);   // reading a resume for a new person does not wait for earlier saves
     if (!WRITES[action]) return chain.then(function () { return send(req); });
     pending++; showSync();
     chain = chain.then(function () { return sendWrite(req); }).then(function () { pending--; everSaved = true; showSync(); }, function (e) {
@@ -1548,7 +1553,8 @@ setTimeout(function () {
         .catch(function () { file.value = ""; toast("That picture could not be read. Try a JPEG or PNG."); });
     });
     showPhoto();
-    form.append(el("div", { class: "fld" }, el("span", { text: "Photo" }), el("div", { class: "photoedit" }, prev, el("div", null, file, rm))));
+    var photoFld = el("div", { class: "fld photofld" }, el("span", { text: "Photo" }), el("div", { class: "photoedit" }, prev, el("div", null, file, rm)));
+    form.append(photoFld);
     while (i < FIELDS.length) {
       var f = FIELDS[i];
       if (f.pair === 1 && FIELDS[i + 1] && FIELDS[i + 1].pair === 2) {
@@ -1556,6 +1562,8 @@ setTimeout(function () {
         i += 2;
       } else { form.append(field(f, s ? (f.k === "metDate" ? dayOf(s) : s[f.k]) : (f.k === "gender" && gFilter === "f" ? "f" : f.k === "metDate" ? today() : ""))); i++; }
     }
+    /* The youngest and oldest age to suggest are not asked for on the form; a value already saved on a profile is kept. */
+    ["ageMin", "ageMax"].forEach(function (k) { var box = form.querySelector("#f-" + k), wrap = box && (box.closest(".pair") || box.closest(".fld")); if (wrap) wrap.hidden = true; });
     var learn = s ? learnOf(s) : [], learnBox = el("div", { class: "chips", role: "group", "aria-label": "Years of learning" });
     var showLearn = function () { learnBox.textContent = ""; learnChips(learn, function (v) { learn = toggleLearn(learn, v); showLearn(); }).forEach(function (b) { learnBox.append(b); }); };
     showLearn();
@@ -1576,7 +1584,7 @@ setTimeout(function () {
       return n;
     };
     var kept = null;   // the resume file itself, stored with the profile on Save
-    var rStatus = el("p", { class: "msg", text: "Choose a PDF, or take or choose a photo of the resume. The app reads the words and fills in the boxes it recognises for you to check." });
+    var rStatus = el("p", { class: "msg", text: "Optional: choose a PDF or a photo of the resume and the app fills in the boxes." });
     var rFile = el("input", { type: "file", id: "f-resume", accept: "application/pdf,.pdf,image/*", "aria-label": "Resume PDF or photo" });
     rFile.addEventListener("change", function () {
       var f = rFile.files && rFile.files[0]; if (!f) return;
@@ -1599,7 +1607,7 @@ setTimeout(function () {
           : "That file could not be read. Use a PDF, or a JPEG or PNG photo.";
       }).then(function () { rFile.disabled = false; rFile.value = ""; rStatus.textContent += kept ? " The file itself will be kept on this profile when you save." : " This file is too large to keep on the profile."; });
     });
-    form.prepend(el("div", { class: "import" }, el("strong", { text: "Fill in from a resume" }), rFile, rStatus));
+    photoFld.after(el("div", { class: "import" }, el("strong", { text: "Fill in from a resume" }), rFile, rStatus));
     var save = el("button", { type: "submit", class: "btn primary", text: "Save" });
     form.append(el("div", { class: "acts" }, save, el("button", { type: "button", class: "btn", text: "Cancel", onclick: function () { s ? openDetail(id) : closeSheet(); } })));
     if (s) form.append(el("div", { class: "acts" }, deleteButton("Delete this profile", function (btn) {
